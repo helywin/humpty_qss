@@ -1,0 +1,57 @@
+# Created by .ignore support plugin (hsz.mobi)
+### C++ template
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+cmake-build-*/
+debug
+release
+build
+CMakeLists.txt.user
+.vs
+out
+node_modules
+#vim交换文件
+*.swp
+conf/
+#word生成的临时文件
+~$*
+compile_commands.json
+.clangd/
+
+#python缓存
+__pycache__
+
+#python 虚拟环境
+venv/
+.idea/

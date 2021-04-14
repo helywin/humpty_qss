@@ -1,0 +1,70 @@
+include_guard()
+include(GitInfo)
+
+function(get_version
+        #VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_TWEAK
+        )
+    file(READ ${CMAKE_SOURCE_DIR}/VERSION VERSION_STR)
+    string(STRIP ${VERSION_STR} VERSION_STR)
+    message(STATUS "Current general version number: ${VERSION_STR}")
+    string(REPLACE "." ";" VERSION_STR_LIST ${VERSION_STR})
+    list(LENGTH VERSION_STR_LIST LEN)
+    if (NOT LEN EQUAL 4)
+        message(FATAL_ERROR "version number not in correct format")
+    endif ()
+    set(GENERAL_VERSION ${VERSION_STR})
+    list(GET VERSION_STR_LIST 0 GENERAL_VERSION_MAJOR)
+    list(GET VERSION_STR_LIST 1 GENERAL_VERSION_MINOR)
+    list(GET VERSION_STR_LIST 2 GENERAL_VERSION_PATCH)
+    list(GET VERSION_STR_LIST 3 GENERAL_VERSION_TWEAK)
+    set(GENERAL_VERSION_MAJOR ${GENERAL_VERSION_MAJOR} PARENT_SCOPE)
+    set(GENERAL_VERSION_MINOR ${GENERAL_VERSION_MINOR} PARENT_SCOPE)
+    set(GENERAL_VERSION_PATCH ${GENERAL_VERSION_PATCH} PARENT_SCOPE)
+    set(GENERAL_VERSION_TWEAK ${GENERAL_VERSION_TWEAK} PARENT_SCOPE)
+#    set(${VERSION_MAJOR} ${GENERAL_VERSION_MAJOR} PARENT_SCOPE)
+#    set(${VERSION_MINOR} ${GENERAL_VERSION_MINOR} PARENT_SCOPE)
+#    set(${VERSION_PATCH} ${GENERAL_VERSION_PATCH} PARENT_SCOPE)
+#    set(${VERSION_TWEAK} ${GENERAL_VERSION_TWEAK} PARENT_SCOPE)
+endfunction()
+
+function(generate_version_file)
+    set(options)
+    set(oneValueArgs PATH DIST APP_NAME APP_ORG)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+            ARG
+            "${options}"
+            "${oneValueArgs}"
+            "${multiValueArgs}"
+            ${ARGN}
+    )
+    if (NOT ARG_DIST)
+        set(ARG_DIST ${CMAKE_BINARY_DIR}/version_info.h)
+    endif ()
+    if (NOT ARG_PATH)
+        set(ARG_PATH ${CMAKE_SOURCE_DIR}/res/version_info.h.in)
+    endif ()
+    if (NOT ARG_APP_NAME)
+        message(FATAL_ERROR "Must set APP_NAME variable")
+    endif ()
+    if (NOT ARG_APP_ORG)
+        message(FATAL_ERROR "Must set APP_ORG variable")
+    endif ()
+
+    set(APP_NAME ${ARG_APP_NAME})
+    set(APP_ORG ${ARG_APP_ORG})
+    set(APP_VERSION_MAJOR ${GENERAL_VERSION_MAJOR})
+    set(APP_VERSION_MINOR ${GENERAL_VERSION_MINOR})
+    set(APP_VERSION_PATCH ${GENERAL_VERSION_PATCH})
+    set(APP_VERSION_TWEAK ${GENERAL_VERSION_TWEAK})
+    set(APP_VERSION_BETA 0)
+
+    get_git_info(GIT_COMMIT GIT_BRANCH)
+#    cmake_print_variables(GIT_COMMIT GIT_BRANCH)
+    set(APP_VERSION_STATUS "")
+    set(APP_VERSION_COMMIT ${GIT_COMMIT})
+    set(APP_VERSION_BRANCH ${GIT_BRANCH})
+    configure_file(${ARG_PATH} ${ARG_DIST} @ONLY)
+endfunction()
+
+get_version()

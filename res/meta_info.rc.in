@@ -1,0 +1,43 @@
+#if defined(UNDER_CE)
+#include <winbase.h>
+#else
+#include <winver.h>
+#endif
+
+@RC_ICON@
+
+VS_VERSION_INFO VERSIONINFO
+        FILEVERSION @RC_FILE_VERSION_NUM@
+        PRODUCTVERSION @RC_PRODUCT_VERSION_NUM@
+        FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+FILEFLAGS 0x1L
+#else
+FILEFLAGS 0x0L
+#endif
+FILEOS VOS__WINDOWS32
+FILETYPE VFT_DLL
+FILESUBTYPE 0x0L
+BEGIN
+        BLOCK "StringFileInfo"
+BEGIN
+        BLOCK "040904b0"
+BEGIN
+        VALUE "Comments", @RC_COMMENTS@
+        VALUE "CompanyName", @RC_COMPANY_NAME@
+        VALUE "FileDescription", @RC_FILE_DESCRIPTION@
+        VALUE "FileVersion", @RC_FILE_VERSION@
+        VALUE "InternalName", @RC_INTERNAL_NAME@
+        VALUE "LegalCopyright", @RC_LEGAL_COPYRIGHT@
+        VALUE "OriginalFilename", @RC_ORIGINAL_FILE_NAME@
+        VALUE "ProductName", @RC_PRODUCT_NAME@
+        VALUE "ProductVersion", @RC_PRODUCT_VERSION@
+        VALUE "PrivateBuild", @RC_PRIVATE_BUILD@
+        VALUE "LegalTrademarks", @RC_LEGAL_TRADEMARKS@
+        END
+END
+        BLOCK "VarFileInfo"
+BEGIN
+        VALUE "Translation", 0x804, 1300
+END
+        END

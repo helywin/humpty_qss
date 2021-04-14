@@ -1,0 +1,5 @@
+add_subdirectory(logger)
+add_subdirectory(crash_handler)
+add_subdirectory(widget)
+add_subdirectory(com)
+add_subdirectory(gui)
