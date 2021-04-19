@@ -7,6 +7,7 @@ target_link_libraries(${CURRENT_MODULE_TARGET}
         Com.Logger
         Com.Utils
         Com.Translatable
+        Com.QCodeEditor
         )
 set(ICON_PATH ${CMAKE_SOURCE_DIR}/res/solar.ico)
 string(REPLACE "/" "\\\\" ICON_PATH_ESCAPED ${ICON_PATH})
