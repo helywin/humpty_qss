@@ -63,7 +63,9 @@ int main(int argc, char *argv[])
     QFile file(":css/gui.css");
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     app.setStyleSheet(QString::fromUtf8(file.readAll()));
-    QApplication::setFont(QFont("Microsoft YaHei"));
+    QFont font = QApplication::font();
+    font.setFamily("Microsoft YaHei");
+    QApplication::setFont(font);
     Window window;
     window.show();
     int ret = QApplication::exec();

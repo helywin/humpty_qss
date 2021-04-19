@@ -5,6 +5,7 @@
 #include "Showcase.hpp"
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QVariant>
 #include "Utils.hpp"
 
 using namespace Com;
@@ -29,9 +30,10 @@ ShowcasePrivate::ShowcasePrivate(Showcase *p, QWidget *content) :
     initWidget(mLabel, q);
 
     mContent = content;
+    mContent->setProperty("test", true);
     mContent->setParent(q);
-    mLayout->addWidget(mContent);
-    mLayout->addWidget(mLabel);
+    mLayout->addWidget(mContent, 1, Qt::AlignHCenter);
+    mLayout->addWidget(mLabel, 0, Qt::AlignHCenter);
     mLabel->setText(content->windowTitle());
 }
 
@@ -39,7 +41,9 @@ Showcase::Showcase(QWidget *content, QWidget *parent) :
         QWidget(parent),
         d_ptr(new ShowcasePrivate(this, content))
 {
-
+    connect(content, &QWidget::windowTitleChanged, [this](const QString &title) {
+        d_ptr->mLabel->setText(title);
+    });
 }
 
 Showcase::~Showcase()

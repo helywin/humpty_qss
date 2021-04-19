@@ -9,6 +9,9 @@
 #include <QPushButton>
 #include <QStyle>
 #include <QApplication>
+#include <QSplitter>
+#include <QLabel>
+#include <QToolButton>
 #include "Utils.hpp"
 #include "Showcase.hpp"
 
@@ -23,6 +26,24 @@ enum WidgetType
     wt_toolButton,
     wt_widgetCount,
 };
+
+QString widgetName(WidgetType type)
+{
+    switch (type) {
+        case wt_widget:
+            return "QWidget";
+        case wt_frame:
+            return "QFrame";
+        case wt_label:
+            return "QLabel";
+        case wt_pushButton:
+            return "QPushButton";
+        case wt_toolButton:
+            return "QToolButton";
+        default:
+            return {};
+    }
+}
 
 /*
 QAbstractButton
@@ -85,13 +106,21 @@ public:
     Q_DECLARE_PUBLIC(Window)
 
     Window *q_ptr;
-    QVBoxLayout *mLayout;
-    QTabWidget *mWidgetGroup;
+    QHBoxLayout *mLayout;
+    QSplitter *mSplitter;
+    QTabWidget *mWidgetPage;
     QWidget *mPages[wt_widgetCount];
+    QWidget *mEditPage;
     QTextEdit *mEditor;
     QPushButton *mUpdate;
 
     explicit WindowPrivate(Window *p);
+    QWidget *initPage(WidgetType type, QGridLayout *&grid);
+    void addQWidgetPage();
+    void addQFramePage();
+    void addQLabelPage();
+    void addQPushButton();
+    void addQToolButton();
 };
 
 WindowPrivate::WindowPrivate(Window *p) :
@@ -99,39 +128,196 @@ WindowPrivate::WindowPrivate(Window *p) :
 {
     Q_Q(Window);
     initWidget(mLayout, q);
-    initWidget(mWidgetGroup, q);
-    initWidgets(mPages, mWidgetGroup);
+    initWidget(mSplitter, q);
+    initWidget(mWidgetPage, q);
+    initWidgets(mPages, mWidgetPage);
+    initWidget(mEditPage, q);
     initWidget(mEditor, q);
     initWidget(mUpdate, q);
+    q->setMinimumSize(800, 600);
 
-    auto page = mPages[wt_widget];
-    page->setWindowTitle("QWidget");
-    auto grid = new QGridLayout(page);
+    mWidgetPage->setTabPosition(QTabWidget::West);
+
+    addQWidgetPage();
+    addQFramePage();
+    addQLabelPage();
+    addQPushButton();
+    addQToolButton();
+
+    mEditor->setFontFamily("consolas");
+    mEditor->setText("QWidget {\n    background:#eeeeee;\n}\n\n"
+                     "QWidget:disabled {\n    background:#cccccc;\n}");
+    auto vbox = new QVBoxLayout(mEditPage);
+    vbox->addWidget(mEditor);
+    vbox->addWidget(mUpdate);
+    mLayout->addWidget(mSplitter);
+    mSplitter->addWidget(mWidgetPage);
+    mSplitter->addWidget(mEditPage);
+}
+
+QWidget *WindowPrivate::initPage(WidgetType type, QGridLayout *&grid)
+{
+    auto page = mPages[type];
+    page->setWindowTitle(widgetName(type));
+    auto pageLayout = new QVBoxLayout(page);
+    page->setLayout(pageLayout);
+    grid = new QGridLayout;
     grid->setSpacing(20);
     grid->setContentsMargins(20, 20, 20, 20);
 
-    auto e = new QWidget;
-    e->setWindowTitle("QWidget");
-    auto s = new Showcase(e, page);
-    e->setProperty("test", true);
-    grid->addWidget(s, 0, 0);
+    pageLayout->addLayout(grid);
+    pageLayout->addStretch(1);
+    mWidgetPage->addTab(page, page->windowTitle());
+    return page;
+}
 
-    e = new QWidget;
+void WindowPrivate::addQWidgetPage()
+{
+    QGridLayout *grid;
+    auto page = initPage(wt_widget, grid);
+    using Type = QWidget;
+
+    auto e = new Type;
+    e->setMinimumHeight(40);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()));
+    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+
+    e = new Type;
+    e->setMinimumHeight(40);
     e->setDisabled(true);
-    e->setWindowTitle("QWidget:disabled");
-    s = new Showcase(e, page);
-    e->setProperty("test", true);
-    grid->addWidget(s, 0, 1);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()) + ":disabled");
+    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+}
 
+void WindowPrivate::addQFramePage()
+{
+    QGridLayout *grid;
+    auto page = initPage(wt_frame, grid);
 
-    mWidgetGroup->addTab(page, page->windowTitle());
+    using Type = QFrame;
+    auto e = new Type;
+    e->setMinimumHeight(40);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()));
+    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
 
-    q->setMinimumSize(800, 600);
-    auto hbox = new QHBoxLayout;
-    hbox->addWidget(mEditor);
-    hbox->addWidget(mUpdate);
-    mLayout->addWidget(mWidgetGroup);
-    mLayout->addLayout(hbox);
+    e = new Type;;
+    e->setMinimumHeight(40);
+    e->setDisabled(true);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()) + ":disabled");
+    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+}
+
+void WindowPrivate::addQLabelPage()
+{
+    const QString text = "标签/Label";
+    QGridLayout *grid;
+    auto page = initPage(wt_label, grid);
+    using Type = QLabel;
+
+    auto e = new Type;
+    e->setMinimumHeight(40);
+    e->setText(text);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()));
+    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+
+    e = new Type;
+    e->setMinimumHeight(40);
+    e->setText(text);
+    e->setDisabled(true);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()) + ":disabled");
+    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+}
+
+void WindowPrivate::addQPushButton()
+{
+    const QString text = "按钮/PushButton";
+    QGridLayout *grid;
+    auto page = initPage(wt_pushButton, grid);
+    using Type = QPushButton;
+
+    auto e = new Type;
+    e->setMinimumHeight(40);
+    e->setMinimumWidth(160);
+    e->setText(text);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()));
+    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+    QObject::connect(e, &Type::pressed, [e] {
+        e->setWindowTitle(Type::staticMetaObject.className() + QString(":pressed"));
+    });
+
+    QObject::connect(e, &Type::released, [e] {
+        e->setWindowTitle(Type::staticMetaObject.className());
+    });
+
+    e = new Type;
+    e->setMinimumHeight(40);
+    e->setMinimumWidth(160);
+    e->setText(text);
+    e->setDisabled(true);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()) + ":disabled");
+    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+
+    e = new Type;
+    e->setMinimumHeight(40);
+    e->setMinimumWidth(160);
+    e->setText(text);
+    e->setCheckable(true);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()) + ":checked");
+    QObject::connect(e, &Type::clicked, [e](bool checked) {
+        if (checked) {
+            e->setWindowTitle(Type::staticMetaObject.className() + QString(":checked"));
+        } else {
+            e->setWindowTitle(Type::staticMetaObject.className());
+        }
+    });
+
+    grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
+}
+
+void WindowPrivate::addQToolButton()
+{
+    const QString text = "按钮/ToolButton";
+    QGridLayout *grid;
+    auto page = initPage(wt_toolButton, grid);
+    using Type = QToolButton;
+
+    auto e = new Type;
+    e->setMinimumHeight(40);
+    e->setMinimumWidth(160);
+    e->setText(text);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()));
+    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+    QObject::connect(e, &Type::pressed, [e] {
+        e->setWindowTitle(Type::staticMetaObject.className() + QString(":pressed"));
+    });
+
+    QObject::connect(e, &Type::released, [e] {
+        e->setWindowTitle(Type::staticMetaObject.className());
+    });
+
+    e = new Type;
+    e->setMinimumHeight(40);
+    e->setMinimumWidth(160);
+    e->setText(text);
+    e->setDisabled(true);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()) + ":disabled");
+    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+
+    e = new Type;
+    e->setMinimumHeight(40);
+    e->setMinimumWidth(160);
+    e->setText(text);
+    e->setCheckable(true);
+    e->setWindowTitle(QString(Type::staticMetaObject.className()) + ":checked");
+    QObject::connect(e, &Type::clicked, [e](bool checked) {
+        if (checked) {
+            e->setWindowTitle(Type::staticMetaObject.className() + QString(":checked"));
+        } else {
+            e->setWindowTitle(Type::staticMetaObject.className());
+        }
+    });
+
+    grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
 }
 
 Window::Window(QWidget *parent) :
