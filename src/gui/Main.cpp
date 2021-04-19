@@ -29,9 +29,11 @@
 #include <QFile>
 #include <QFontDatabase>
 #include <QWidget>
+#include <QFile>
 #include "CrashHandler.hpp"
 #include "Logger.hpp"
 #include "version_info.h"
+#include "Window.hpp"
 
 using namespace Com;
 
@@ -58,12 +60,11 @@ int main(int argc, char *argv[])
     qputenv("QT_ENABLE_HIGHDPI_SCALING", "1");
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
-    QFile qssFile(":css/black.qss");
-    auto font = QApplication::font();
-    font.setPixelSize(15);
-    QApplication::setFont(font);
-
-    QWidget window;
+    QFile file(":css/gui.css");
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    app.setStyleSheet(QString::fromUtf8(file.readAll()));
+    QApplication::setFont(QFont("Microsoft YaHei"));
+    Window window;
     window.show();
     int ret = QApplication::exec();
     CrashHandler::freeHandler();

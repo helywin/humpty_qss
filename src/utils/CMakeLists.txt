@@ -1,4 +1,4 @@
-set_submodule_library(Com Widget)
+set_submodule_library(Com Utils)
 target_link_libraries(${CURRENT_MODULE_TARGET}
         Qt5::Widgets
         Qt5::Core

@@ -1,0 +1,2 @@
+set_submodule_library(Com Translatable)
+set_simple_meta_info()

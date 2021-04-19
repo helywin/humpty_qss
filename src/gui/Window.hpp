@@ -6,11 +6,24 @@
 #define SOLAR_WINDOW_HPP
 
 #include <QWidget>
+#include "Translatable.hpp"
 
-class Window : public QWidget
+class WindowPrivate;
+
+class Window : public QWidget, public Com::Translatable
 {
+Q_OBJECT
 public:
+    explicit Window(QWidget *parent = nullptr);
+    ~Window() override;
 
+protected:
+    void translate() override;
+
+private:
+    Q_DECLARE_PRIVATE(Window)
+    Q_DISABLE_COPY(Window)
+    QScopedPointer<WindowPrivate> d_ptr;
 };
 
 #endif   //SOLAR_WINDOW_HPP

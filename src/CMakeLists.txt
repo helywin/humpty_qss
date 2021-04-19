@@ -1,5 +1,6 @@
 add_subdirectory(logger)
 add_subdirectory(crash_handler)
-add_subdirectory(widget)
+add_subdirectory(translatable)
+add_subdirectory(utils)
 add_subdirectory(com)
 add_subdirectory(gui)

@@ -1,0 +1,7 @@
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>css/gui.css</file>
+    </qresource>
+    <qresource prefix="/">
+    </qresource>
+</RCC>

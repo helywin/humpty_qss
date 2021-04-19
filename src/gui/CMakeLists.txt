@@ -5,7 +5,8 @@ target_link_libraries(${CURRENT_MODULE_TARGET}
         Qt5::Widgets
         Com.CrashHandler
         Com.Logger
-        Com.Widget
+        Com.Utils
+        Com.Translatable
         )
 set(ICON_PATH ${CMAKE_SOURCE_DIR}/res/solar.ico)
 string(REPLACE "/" "\\\\" ICON_PATH_ESCAPED ${ICON_PATH})
@@ -17,3 +18,4 @@ generate_meta_info(
         PRODUCT_VERSION ${GENERAL_VERSION}
         ICON "${ICON_PATH_ESCAPED}")
 target_sources(${CURRENT_MODULE_TARGET} PRIVATE ${META_FILE})
+generate_qrc()

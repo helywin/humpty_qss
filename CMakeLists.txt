@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD 17)
 #set(COPY_RIGHT "copyright 2021")
 #set(LEGAL_TRADEMARKS "Solar")
 
+if (NOT DEFINED Qt5_SDK_DIR)
+    set(Qt5_SDK_DIR D:/Qt/5.15.2/msvc2019_64)
+#    set(Qt5_DIR D:/Qt/5.15.2/msvc2019_64/lib/cmake/Qt5)
+endif ()
 
 list(APPEND CMAKE_PREFIX_PATH ${Qt5_SDK_DIR})
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -81,7 +85,7 @@ elseif (WIN32)
         set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/NOLOGO /DYNAMICBASE /NXCOMPAT /INCREMENTAL:NO /DEBUG /OPT:REF /OPT:ICF")# /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:LIBC
         set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/NOLOGO /DYNAMICBASE /NXCOMPAT /INCREMENTAL:NO /DLL /SUBSYSTEM:WINDOWS /DEBUG /OPT:REF /OPT:ICF")
     else ()
-        message(FATAL_ERROR "platform not supported")
+        message(FATAL_ERROR "platform not supported ")
     endif ()
 endif ()
 
