@@ -3,15 +3,8 @@
 //
 
 #include "Window.hpp"
-#include <QTabWidget>
-#include <QBoxLayout>
-#include <QPushButton>
-#include <QStyle>
-#include <QApplication>
-#include <QSplitter>
-#include <QLabel>
-#include <QToolButton>
-#include <QLineEdit>
+#include <QtWidgets>
+#include <QMouseEvent>
 
 #include <QCodeEditor>
 #include "Utils.hpp"
@@ -27,6 +20,7 @@ enum WidgetType
     wt_pushButton,
     wt_toolButton,
     wt_lineEdit,
+    wt_comboBox,
     wt_widgetCount,
 };
 
@@ -45,6 +39,8 @@ QString widgetName(WidgetType type)
             return "QToolButton";
         case wt_lineEdit:
             return "QLineEdit";
+        case wt_comboBox:
+            return "QComboBox";
         default:
             return {};
     }
@@ -125,6 +121,7 @@ public:
     void addQPushButton();
     void addQToolButton();
     void addQLineEditPage();
+    void addQComboBoxPage();
 };
 
 WindowPrivate::WindowPrivate(Window *p) :
@@ -148,6 +145,7 @@ WindowPrivate::WindowPrivate(Window *p) :
     addQPushButton();
     addQToolButton();
     addQLineEditPage();
+    addQComboBoxPage();
 
     mEditor->setFontFamily("consolas");
     mEditor->setText("QWidget {\n    background:#eeeeee;\n}\n\n"
@@ -185,52 +183,6 @@ void setSize(QWidget *widget)
     widget->setMinimumSize(160, 40);
 }
 
-void updateTitle(QWidget *widget)
-{
-    QString title = widget->metaObject()->className();
-    if (widget->dynamicPropertyNames().contains("type")) {
-        title += "[" + widget->property("type").toString() + "]";
-    }
-    if (widget->dynamicPropertyNames().contains("states")) {
-        for (const auto &state : widget->property("states").toStringList()) {
-            title += ":" + state;
-        }
-    }
-    widget->setWindowTitle(title);
-}
-
-void addStates(QWidget *widget, const QString &state)
-{
-    if (widget->dynamicPropertyNames().contains("states")) {
-        auto list = widget->property("states").toStringList();
-        if (!list.contains(state)) {
-            list.append(state);
-        }
-        widget->setProperty("states", list);
-    } else {
-        widget->setProperty("states", QStringList{state});
-    }
-    updateTitle(widget);
-}
-
-void removeStates(QWidget *widget, const QString &state)
-{
-    if (widget->dynamicPropertyNames().contains("states")) {
-        auto list = widget->property("states").toStringList();
-        if (list.contains(state)) {
-            list.removeOne(state);
-        }
-        widget->setProperty("states", list);
-    }
-    updateTitle(widget);
-}
-
-void setType(QWidget *widget, const QString &type)
-{
-    widget->setProperty("type", type);
-    updateTitle(widget);
-}
-
 void WindowPrivate::addQWidgetPage()
 {
     QGridLayout *grid;
@@ -239,13 +191,11 @@ void WindowPrivate::addQWidgetPage()
 
     auto e = new Type;
     setSize(e);
-    updateTitle(e);
     grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->setDisabled(true);
-    addStates(e, "disabled");
     grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
 }
 
@@ -257,13 +207,11 @@ void WindowPrivate::addQFramePage()
     using Type = QFrame;
     auto e = new Type;
     setSize(e);
-    updateTitle(e);
     grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
 
     e = new Type;;
     setSize(e);
     e->setDisabled(true);
-    addStates(e, "disabled");
     grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
 }
 
@@ -277,14 +225,12 @@ void WindowPrivate::addQLabelPage()
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    updateTitle(e);
     grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    addStates(e, "disabled");
     grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
 }
 
@@ -298,36 +244,18 @@ void WindowPrivate::addQPushButton()
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    updateTitle(e);
     grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
-    QObject::connect(e, &Type::pressed, [e] {
-        addStates(e, "pressed");
-    });
-
-    QObject::connect(e, &Type::released, [e] {
-        removeStates(e, "pressed");
-    });
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    addStates(e, "disabled");
     grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setCheckable(true);
-    addStates(e, "checked");
-    QObject::connect(e, &Type::clicked, [e](bool checked) {
-        if (checked) {
-            addStates(e, "checked");
-        } else {
-            removeStates(e, "checked");
-        }
-    });
-
     grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
 }
 
@@ -341,36 +269,18 @@ void WindowPrivate::addQToolButton()
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    updateTitle(e);
     grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
-    QObject::connect(e, &Type::pressed, [e] {
-        addStates(e, "pressed");
-    });
-
-    QObject::connect(e, &Type::released, [e] {
-        removeStates(e, "pressed");
-    });
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    addStates(e, "disabled");
     grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setCheckable(true);
-    addStates(e, "checked");
-    QObject::connect(e, &Type::clicked, [e](bool checked) {
-        if (checked) {
-            addStates(e, "checked");
-        } else {
-            removeStates(e, "checked");
-        }
-    });
-
     grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
 }
 
@@ -384,36 +294,56 @@ void WindowPrivate::addQLineEditPage()
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    updateTitle(e);
     grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    addStates(e, "disabled");
     grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setReadOnly(true);
-    addStates(e, "read-only");
     grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setEchoMode(QLineEdit::Password);
-    setType(e, "echoMode=\"2\"");
     grid->addWidget(new Showcase(e, page), 1, 1, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->setText(text + "+ clear");
     e->setClearButtonEnabled(true);
-    updateTitle(e);
     grid->addWidget(new Showcase(e, page), 2, 0, Qt::AlignHCenter);
+}
+
+void WindowPrivate::addQComboBoxPage()
+{
+    const QStringList textList = {"红楼梦", "三国演义", "西游记", "水浒传"};
+    QGridLayout *grid;
+    auto page = initPage(wt_comboBox, grid);
+    using Type = QComboBox;
+
+    auto e = new Type;
+    setSize(e);
+    e->addItems(textList);
+    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+
+    e = new Type;
+    setSize(e);
+    e->addItems(textList);
+    e->setDisabled(true);
+    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+
+    e = new Type;
+    setSize(e);
+    e->addItems(textList);
+    e->setEditable(false);
+    grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
 }
 
 Window::Window(QWidget *parent) :

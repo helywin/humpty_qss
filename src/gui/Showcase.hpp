@@ -11,16 +11,17 @@ class ShowcasePrivate;
 
 class Showcase : public QWidget
 {
-    Q_OBJECT
+Q_OBJECT
 public:
     explicit Showcase(QWidget *content, QWidget *parent = nullptr);
     ~Showcase() override;
     void setWidget(QWidget *w);
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     Q_DECLARE_PRIVATE(Showcase)
     Q_DISABLE_COPY(Showcase)
-    QScopedPointer <ShowcasePrivate> d_ptr;
+    QScopedPointer<ShowcasePrivate> d_ptr;
 };
 
 
