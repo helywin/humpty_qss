@@ -6,7 +6,7 @@
 #include <QtWidgets>
 #include <QMouseEvent>
 
-#include <QCodeEditor>
+#include "QssEditor.hpp"
 #include "Utils.hpp"
 #include "Showcase.hpp"
 
@@ -110,7 +110,7 @@ public:
     QTabWidget *mWidgetPage;
     QWidget *mPages[wt_widgetCount];
     QWidget *mEditPage;
-    QCodeEditor *mEditor;
+    QssEditor *mEditor;
     QPushButton *mUpdate;
 
     explicit WindowPrivate(Window *p);
@@ -150,9 +150,6 @@ WindowPrivate::WindowPrivate(Window *p) :
     mEditor->setFontFamily("consolas");
     mEditor->setText("QWidget {\n    background:#eeeeee;\n}\n\n"
                      "QWidget:disabled {\n    background:#cccccc;\n}");
-    mEditor->setTabReplace(true);
-    mEditor->setTabReplaceSize(4);
-    mEditor->setAutoIndentation(false);
 
     auto vbox = new QVBoxLayout(mEditPage);
     vbox->addWidget(mEditor);

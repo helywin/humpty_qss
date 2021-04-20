@@ -7,3 +7,4 @@
 - [ ] editor completer
 - [ ] editor highlighter
 - [ ] widget plugin api
+- [ ] shortcut add state

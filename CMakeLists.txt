@@ -20,7 +20,7 @@ include(UpdateBuildTime)
 include(GenerateQrc)
 
 set(QT_VERSION 5)
-find_package(Qt${QT_VERSION} COMPONENTS Core Widgets Gui PrintSupport REQUIRED)
+find_package(Qt${QT_VERSION} COMPONENTS Core Widgets Gui PrintSupport Designer REQUIRED)
 
 if (NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Release or Debug?" FORCE)
