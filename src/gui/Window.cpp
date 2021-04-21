@@ -177,7 +177,7 @@ QWidget *WindowPrivate::initPage(WidgetType type, QGridLayout *&grid)
 
 void setSize(QWidget *widget)
 {
-    widget->setMinimumSize(160, 40);
+    widget->setFixedSize(160, 40);
 }
 
 void WindowPrivate::addQWidgetPage()
@@ -327,20 +327,20 @@ void WindowPrivate::addQComboBoxPage()
 
     auto e = new Type;
     setSize(e);
+    e->setEditable(true);
     e->addItems(textList);
-    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+    grid->addWidget(new Showcase(e, page, slp_south), 0, 0, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->addItems(textList);
     e->setDisabled(true);
-    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+    grid->addWidget(new Showcase(e, page, slp_south), 0, 1, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->addItems(textList);
-    e->setEditable(false);
-    grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
+    grid->addWidget(new Showcase(e, page, slp_south), 1, 0, Qt::AlignHCenter);
 }
 
 Window::Window(QWidget *parent) :

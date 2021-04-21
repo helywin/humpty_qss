@@ -19,10 +19,6 @@ Q_OBJECT
 public:
     explicit QssEditor(QWidget *parent = nullptr);
     ~QssEditor() override;
-    void setTabReplace(bool replace);
-    bool tabReplace() const;
-    void setTabReplaceSize(int size);
-    int tabReplaceSize() const;
 
 private:
     Q_DECLARE_PRIVATE(QssEditor)

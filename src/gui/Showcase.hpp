@@ -9,13 +9,19 @@
 
 class ShowcasePrivate;
 
+enum ShowcaseWidgetPosition
+{
+    slp_north,
+    slp_south,
+};
+
 class Showcase : public QWidget
 {
 Q_OBJECT
 public:
-    explicit Showcase(QWidget *content, QWidget *parent = nullptr);
+    explicit Showcase(QWidget *content, QWidget *parent = nullptr,
+                      ShowcaseWidgetPosition pos = slp_north);
     ~Showcase() override;
-    void setWidget(QWidget *w);
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
