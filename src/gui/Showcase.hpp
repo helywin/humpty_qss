@@ -22,12 +22,22 @@ public:
     explicit Showcase(QWidget *content, QWidget *parent = nullptr,
                       ShowcaseWidgetPosition pos = slp_north);
     ~Showcase() override;
-    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     Q_DECLARE_PRIVATE(Showcase)
     Q_DISABLE_COPY(Showcase)
     QScopedPointer<ShowcasePrivate> d_ptr;
+};
+
+class EventListener : public QObject
+{
+Q_OBJECT
+public:
+    explicit EventListener(QObject *parent = nullptr);
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
+signals:
+    void eventOccurred(QObject *watched, QEvent *event);
 };
 
 

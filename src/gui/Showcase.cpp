@@ -41,6 +41,7 @@ public:
     QWidget *mContent;
     QMap<QString, ControlDetail> mControlDetails;
     QString mControlName;
+    EventListener *mEventListener;
 
     explicit ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPosition pos);
     void updateTitle(const QString &name);
@@ -48,6 +49,7 @@ public:
     void updateMainControlTitle();
     void setWidget(QWidget *w, ShowcaseWidgetPosition pos);
     ControlDetail &mainControlDetail();
+    void onEventOccurred(QObject *watched, QEvent *event);
 };
 
 ShowcasePrivate::ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPosition pos) :
@@ -55,6 +57,7 @@ ShowcasePrivate::ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPo
 {
     Q_Q(Showcase);
     initWidget(mLayout, q);
+    initWidget(mEventListener, q);
     setWidget(content, pos);
 }
 
@@ -101,13 +104,14 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
     mContent->setParent(q);
 
     mControlName = w->metaObject()->className();
+    mContent->setProperty("controlName", mControlName);
     mainControlDetail() = ControlDetail{new QLabel(q)};
 
     if (!mContent->isEnabled()) {
         mainControlDetail().states.insert("disabled");
         goto set_layout;
     } else {
-        mContent->installEventFilter(q);
+        mContent->installEventFilter(mEventListener);
     }
 
     auto dPushButton = dynamic_cast<QPushButton *>(mContent);
@@ -164,6 +168,9 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
 
     auto dLineEdit = dynamic_cast<QLineEdit *>(mContent);
     if (dLineEdit) {
+        for (auto child : dLineEdit->children()) {
+            qDebug() << child->metaObject()->className() << ": " << child->dynamicPropertyNames();
+        }
         if (dLineEdit->isReadOnly()) {
             mainControlDetail().type = "read-only";
         }
@@ -178,15 +185,17 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
             mainControlDetail().type = "read-only";
         }
 
-        qDebug() << dComboBox->children();
+        for (auto child : dComboBox->children()) {
+            qDebug() << child->metaObject()->className() << ": " << child->dynamicPropertyNames();
+        }
     }
 
-set_layout:
+    set_layout:
     for (const auto &v  : mControlDetails) {
         mLayout->addWidget(v.display, 0, Qt::AlignCenter);
     }
     if (pos == slp_south) {
-        mLayout->addWidget(mContent, 0, Qt::AlignCenter);
+        mLayout->addWidget(mContent, 0, Qt::AlignCenter);\
     } else {
         mLayout->insertWidget(0, mContent, 0, Qt::AlignCenter);
     }
@@ -194,36 +203,65 @@ set_layout:
     updateAllControlTitle();
 }
 
+void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
+{
+    if (!watched) {
+        return;
+    }
+    if (!watched->dynamicPropertyNames().contains("controlName")) {
+        return;
+    }
+    QString controlName = watched->property("controlName").toString();
+    if (controlName.isEmpty()) {
+        return;
+    }
+    bool changed = false;
+    auto &detail = mControlDetails[controlName];
+    if (event->type() == QEvent::Enter) {
+        detail.states.insert("hover");
+        changed = true;
+    } else if (event->type() == QEvent::Leave) {
+        detail.states.remove("hover");
+        changed = true;
+    }
+    if (dynamic_cast<QLineEdit *>(watched)) {
+        if (event->type() == QEvent::FocusIn) {
+            detail.states.insert("focus");
+            changed = true;
+        } else if (event->type() == QEvent::FocusOut) {
+            detail.states.remove("focus");
+            changed = true;
+        }
+    }
+    if (changed) {
+        updateTitle(controlName);
+    }
+
+}
+
 Showcase::Showcase(QWidget *content, QWidget *parent, ShowcaseWidgetPosition pos) :
         QWidget(parent),
         d_ptr(new ShowcasePrivate(this, content, pos))
-{}
+{
+    Q_D(Showcase);
+    connect(d->mEventListener, &EventListener::eventOccurred,
+            [this](QObject *watched, QEvent *event) {
+                d_ptr->onEventOccurred(watched, event);
+            });
+}
 
 Showcase::~Showcase()
 {
 
 }
 
-bool Showcase::eventFilter(QObject *watched, QEvent *event)
+EventListener::EventListener(QObject *parent) : QObject(parent)
 {
-    Q_D(Showcase);
-    if (!watched) {
-        return false;
-    }
-    if (event->type() == QEvent::Enter) {
-        d->mainControlDetail().states.insert("hover");
-    } else if (event->type() == QEvent::Leave) {
-        d->mainControlDetail().states.remove("hover");
-    }
-    if (dynamic_cast<QLineEdit *>(watched)) {
-        if (event->type() == QEvent::FocusIn) {
-            qDebug() << "focus in";
-            d->mainControlDetail().states.insert("focus");
-        } else if (event->type() == QEvent::FocusOut) {
-            d->mainControlDetail().states.remove("focus");
-        }
-    }
 
-    d->updateMainControlTitle();
-    return QObject::eventFilter(watched, event);
+}
+
+bool EventListener::eventFilter(QObject *watched, QEvent *event)
+{
+    emit eventOccurred(watched, event);
+    return false;
 }
