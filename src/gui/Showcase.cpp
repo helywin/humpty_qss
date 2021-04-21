@@ -10,21 +10,115 @@
 #include <QMouseEvent>
 #include <QSet>
 #include <QDebug>
+#include <iostream>
 #include <QtWidgets>
 #include "Utils.hpp"
 
 using namespace Com;
 
+void printChildrenWidgetInfo(QWidget *w)
+{
+    bool hasChildWidget = false;
+    QString text = w->metaObject()->className() + QString(":\n");
+    for (auto child : w->children()) {
+        if (child->inherits("QWidget")) {
+            text += child->metaObject()->className() + QString(" ");
+            if (!child->dynamicPropertyNames().isEmpty()) {
+                text += QString("properties: ") +
+                        child->dynamicPropertyNames().join("  ");
+            }
+            hasChildWidget = true;
+        }
+    }
+    if (hasChildWidget) {
+        std::cout << text.toStdString() << std::endl;
+    }
+}
+
+QString widgetSubtree(const QWidget *w, int currentLevel = 0,
+                      const char *sep = "\n", const char *space = " ")
+{
+    QString text;
+    if (currentLevel != 0) {
+        text += sep;
+    }
+    QString indent = QString(space).repeated(currentLevel * 4);
+    text += indent + w->metaObject()->className();
+    if (!w->objectName().isEmpty()) {
+        text += QString(":") + space + w->objectName();
+    }
+    for (const auto child : w->children()) {
+        if (!child->inherits("QWidget")) {
+            continue;
+        }
+        text += widgetSubtree((QWidget *) child, currentLevel + 1, sep, space);
+    }
+    return text;
+}
+
+QString objectSubtree(const QObject *w, int currentLevel = 0,
+                      const char *sep = "\n", const char *space = " ")
+{
+    QString text;
+    if (currentLevel != 0) {
+        text += sep;
+    }
+    QString indent = QString(space).repeated(currentLevel * 4);
+    text += indent + w->metaObject()->className();
+    if (!w->objectName().isEmpty()) {
+        text += QString(": ") + w->objectName();
+    }
+    for (const auto child : w->children()) {
+        if (!child->inherits("QObject")) {
+            continue;
+        }
+        text += objectSubtree(child, currentLevel + 1, sep, space);
+    }
+    return text;
+}
+
+QList<QObject *> getChildrenByClassNames(const QObject *parent, QStringList names)
+{
+    QList<QObject *> list;
+    if (parent->children().isEmpty() || names.isEmpty()) {
+        return {};
+    }
+    if (names.size() == 1) {
+        for (const auto child : parent->children()) {
+            if (child->metaObject()->className() == names.first()) {
+                list.append(child);
+            }
+        }
+    } else {
+        for (const auto child : parent->children()) {
+            if (child->metaObject()->className() == names.first()) {
+                names.pop_front();
+                list.append(getChildrenByClassNames(child, names));
+            }
+        }
+    }
+    return list;
+}
+
 struct ControlDetail
 {
     QLabel *display = nullptr;
+    QWidget *control = nullptr;
     QSet<QString> states;
     QString type;
+    QString objectTree;
 
     ControlDetail() = default;
 
-    explicit ControlDetail(QLabel *label) : display(label)
+    explicit ControlDetail(QWidget *parent) :
+            display(new QLabel(parent))
     {}
+
+    void setControl(QWidget *c)
+    {
+        control = c;
+        display->setToolTip("Object&nbsp;Tree<br>" + objectSubtree(c, 0, "<br>", "&nbsp;"));
+    }
 
     ControlDetail(const ControlDetail &detail) = default;
     ControlDetail(ControlDetail &&detail) = default;
@@ -105,7 +199,13 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
 
     mControlName = w->metaObject()->className();
     mContent->setProperty("controlName", mControlName);
-    mainControlDetail() = ControlDetail{new QLabel(q)};
+    mainControlDetail() = ControlDetail(q);
+    mainControlDetail().setControl(mContent);
+
+//    printChildrenWidgetInfo(mContent);
+    std::cout << objectSubtree(mContent).toStdString() << std::endl;
+    std::cout << "========================" << std::endl;
+
 
     if (!mContent->isEnabled()) {
         mainControlDetail().states.insert("disabled");
@@ -168,9 +268,6 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
 
     auto dLineEdit = dynamic_cast<QLineEdit *>(mContent);
     if (dLineEdit) {
-        for (auto child : dLineEdit->children()) {
-            qDebug() << child->metaObject()->className() << ": " << child->dynamicPropertyNames();
-        }
         if (dLineEdit->isReadOnly()) {
             mainControlDetail().type = "read-only";
         }
@@ -184,10 +281,7 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
         if (!dComboBox->isEditable()) {
             mainControlDetail().type = "read-only";
         }
-
-        for (auto child : dComboBox->children()) {
-            qDebug() << child->metaObject()->className() << ": " << child->dynamicPropertyNames();
-        }
+        getChildrenByClassNames(dComboBox, {""});
     }
 
     set_layout:
@@ -196,6 +290,7 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
     }
     if (pos == slp_south) {
         mLayout->addWidget(mContent, 0, Qt::AlignCenter);\
+
     } else {
         mLayout->insertWidget(0, mContent, 0, Qt::AlignCenter);
     }

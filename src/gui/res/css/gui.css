@@ -1,3 +1,7 @@
 Showcase {
   border-color: 1px solid black;
 }
+
+QToolTip {
+  font-family: "consolas";
+}
