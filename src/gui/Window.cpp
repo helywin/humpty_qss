@@ -9,6 +9,7 @@
 #include "QssEditor.hpp"
 #include "Utils.hpp"
 #include "Showcase.hpp"
+#include "QssEditorConfig.hpp"
 
 using namespace Com;
 
@@ -21,6 +22,7 @@ enum WidgetType
     wt_toolButton,
     wt_lineEdit,
     wt_comboBox,
+    wt_checkBox,
     wt_widgetCount,
 };
 
@@ -41,48 +43,42 @@ QString widgetName(WidgetType type)
             return "QLineEdit";
         case wt_comboBox:
             return "QComboBox";
+        case wt_checkBox:
+            return "QCheckBox";
         default:
             return {};
     }
 }
 
 /*
-QAbstractButton
-QAbstractSlider
-QAbstractSpinBox
-QCalendarWidget
-QComboBox
-QDesignerActionEditorInterface
-QDesignerFormWindowInterface
-QDesignerObjectInspectorInterface
-QDesignerPropertyEditorInterface
-QDesignerWidgetBoxInterface
-QDesktopWidget
-QDialog
-QDialogButtonBox
-QDockWidget
+ QCheckBox
+ QComboBox
+QCommandLinkButton
+QDateEdit
+QDateTimeEdit
+QDial
+QDoubleSpinBox
 QFocusFrame
-QGroupBox
-QKeySequenceEdit
-QMacCocoaViewContainer
-QMacNativeWidget
-QMainWindow
-QMdiSubWindow
+QFontComboBox
+QLCDNumber
+QLabel
+ QLineEdit
 QMenu
-QMenuBar
-QOpenGLWidget
 QProgressBar
-QQuickWidget
-QRubberBand
+ QPushButton
+QRadioButton
+QScrollArea
+QScrollBar
 QSizeGrip
-QSplashScreen
-QSplitterHandle
-QStatusBar
-QSvgWidget
+QSlider
+QSpinBox
 QTabBar
 QTabWidget
-QToolBar
-QWizardPage
+QTimeEdit
+QToolBox
+ QToolButton
+ QWidget
+
 */
 
 void updateStyleSheet(QWidget *parent, const QString &qss)
@@ -122,6 +118,7 @@ public:
     void addQToolButton();
     void addQLineEditPage();
     void addQComboBoxPage();
+    void addQCheckBoxPage();
 };
 
 WindowPrivate::WindowPrivate(Window *p) :
@@ -146,7 +143,12 @@ WindowPrivate::WindowPrivate(Window *p) :
     addQToolButton();
     addQLineEditPage();
     addQComboBoxPage();
+    addQCheckBoxPage();
 
+    QssEditorConfig config;
+    config.setTabReplace(true);
+    config.setAutoIndentation(true);
+    mEditor->setEditorConfig(config);
     mEditor->setFontFamily("consolas");
     mEditor->setText("QWidget {\n    background:#eeeeee;\n}\n\n"
                      "QWidget:disabled {\n    background:#cccccc;\n}");
@@ -341,6 +343,31 @@ void WindowPrivate::addQComboBoxPage()
     setSize(e);
     e->addItems(textList);
     grid->addWidget(new Showcase(e, page, slp_south), 1, 0, Qt::AlignHCenter);
+}
+
+void WindowPrivate::addQCheckBoxPage()
+{
+    const QString text = "复选/CheckBox";
+    QGridLayout *grid;
+    auto page = initPage(wt_checkBox, grid);
+    using Type = QCheckBox;
+
+    auto e = new Type;
+    setSize(e);
+    e->setText(text);
+    grid->addWidget(new Showcase(e, page, slp_north), 0, 0, Qt::AlignHCenter);
+
+    e = new Type;
+    setSize(e);
+    e->setText(text);
+    e->setDisabled(true);
+    grid->addWidget(new Showcase(e, page, slp_north), 0, 1, Qt::AlignHCenter);
+
+    e = new Type;
+    setSize(e);
+    e->setText(text);
+    e->setTristate(true);
+    grid->addWidget(new Showcase(e, page, slp_north), 1, 0, Qt::AlignHCenter);
 }
 
 Window::Window(QWidget *parent) :

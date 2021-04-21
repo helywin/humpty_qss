@@ -319,7 +319,7 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
         detail.states.remove("hover");
         changed = true;
     }
-    if (dynamic_cast<QLineEdit *>(watched)) {
+    if (dynamic_cast<QWidget *>(watched)) {
         if (event->type() == QEvent::FocusIn) {
             detail.states.insert("focus");
             changed = true;
