@@ -25,10 +25,16 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
+    void insertFromMimeData(const QMimeData *source) override;
 
 private:
     QChar findChar(int offset) const;
     bool matchString(int start, int end, const QString &str);
+    bool surroundWithBrace(QPoint &start, QPoint &end);
+    int widthBeyondIndent() const;
+    int widthUnderIndent() const;
+    QString cursorLeftText() const;
+    QString cursorRightText() const;
 
 private:
     Q_DECLARE_PRIVATE(QssEditor)

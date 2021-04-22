@@ -320,6 +320,12 @@ void WindowPrivate::addQLineEditPage()
     grid->addWidget(new Showcase(e, page), 2, 0, Qt::AlignHCenter);
 }
 
+/* *********************************************************************************
+ * NOTE
+ * QComboBoxPrivateContainer is lazy load, we should use setEditable(true) to let
+ * it to be initialized, so that we can get QComboBoxListView object
+ * *********************************************************************************/
+
 void WindowPrivate::addQComboBoxPage()
 {
     const QStringList textList = {"红楼梦", "三国演义", "西游记", "水浒传"};
@@ -336,12 +342,16 @@ void WindowPrivate::addQComboBoxPage()
     e = new Type;
     setSize(e);
     e->addItems(textList);
+    e->setEditable(true);
+    e->setEditable(false);
     e->setDisabled(true);
     grid->addWidget(new Showcase(e, page, slp_south), 0, 1, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->addItems(textList);
+    e->setEditable(true);
+    e->setEditable(false);
     grid->addWidget(new Showcase(e, page, slp_south), 1, 0, Qt::AlignHCenter);
 }
 

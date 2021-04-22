@@ -281,7 +281,8 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
         if (!dComboBox->isEditable()) {
             mainControlDetail().type = "read-only";
         }
-        getChildrenByClassNames(dComboBox, {""});
+
+//        getChildrenByClassNames(dComboBox, {""});
     }
 
     set_layout:
@@ -294,6 +295,10 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
     } else {
         mLayout->insertWidget(0, mContent, 0, Qt::AlignCenter);
     }
+//
+//    if (dynamic_cast<QComboBox *>(mContent)) {
+//        assert(!getChildrenByClassNames(mContent, {"QComboBoxPrivateContainer"}).isEmpty());
+//    }
 
     updateAllControlTitle();
 }
@@ -312,6 +317,9 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
     }
     bool changed = false;
     auto &detail = mControlDetails[controlName];
+//    if (event->type() == QEvent::Create) {
+//        qDebug() << watched->metaObject()->className() << ": create";
+//    }
     if (event->type() == QEvent::Enter) {
         detail.states.insert("hover");
         changed = true;
@@ -326,6 +334,16 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
         } else if (event->type() == QEvent::FocusOut) {
             detail.states.remove("focus");
             changed = true;
+        }
+    }
+    if (dynamic_cast<QComboBox *>(watched)) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            assert(!getChildrenByClassNames(watched, {"QComboBoxPrivateContainer"}).isEmpty());
+            QTimer::singleShot(400, [watched] {
+            });
+        } else if (event->type() == QEvent::Enter) {
+            assert(!getChildrenByClassNames(watched, {"QComboBoxPrivateContainer"}).isEmpty());
+            std::cout << objectSubtree(watched).toStdString() << std::endl;
         }
     }
     if (changed) {
