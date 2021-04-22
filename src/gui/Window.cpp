@@ -9,45 +9,10 @@
 #include "Utils.hpp"
 #include "Showcase.hpp"
 #include "QssEditorConfig.hpp"
+#include "GuiCom.hpp"
 
 using namespace Com;
 
-enum WidgetType
-{
-    wt_widget,
-    wt_frame,
-    wt_label,
-    wt_pushButton,
-    wt_toolButton,
-    wt_lineEdit,
-    wt_comboBox,
-    wt_checkBox,
-    wt_widgetCount,
-};
-
-QString widgetName(WidgetType type)
-{
-    switch (type) {
-        case wt_widget:
-            return "QWidget";
-        case wt_frame:
-            return "QFrame";
-        case wt_label:
-            return "QLabel";
-        case wt_pushButton:
-            return "QPushButton";
-        case wt_toolButton:
-            return "QToolButton";
-        case wt_lineEdit:
-            return "QLineEdit";
-        case wt_comboBox:
-            return "QComboBox";
-        case wt_checkBox:
-            return "QCheckBox";
-        default:
-            return {};
-    }
-}
 
 /*
  QCheckBox

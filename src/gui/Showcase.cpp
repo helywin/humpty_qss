@@ -13,6 +13,9 @@
 #include <iostream>
 #include <QtWidgets>
 #include "Utils.hpp"
+#include "GuiCom.hpp"
+
+#define QCHECKBOX_INDICATOR "QCheckBox::indicator"
 
 using namespace Com;
 
@@ -288,6 +291,25 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
             dComboBox->view()->installEventFilter(mEventListener);
 //        }
     }
+    //indeterminate
+    auto dCheckBox = dynamic_cast<QCheckBox *>(mContent);
+    if (dCheckBox) {
+        mControlDetails[QCHECKBOX_INDICATOR] = ControlDetail(q);
+        QObject::connect(dCheckBox, &QCheckBox::stateChanged, [this](int state) {
+            mainControlDetail().states.remove("checked");
+            mainControlDetail().states.remove("indeterminate");
+            mControlDetails[QCHECKBOX_INDICATOR].states.remove("checked");
+            mControlDetails[QCHECKBOX_INDICATOR].states.remove("indeterminate");
+            if (state == Qt::Checked) {
+                mainControlDetail().states.insert("checked");
+                mControlDetails[QCHECKBOX_INDICATOR].states.insert("checked");
+            } else if (state == Qt::PartiallyChecked) {
+                mainControlDetail().states.insert("indeterminate");
+                mControlDetails[QCHECKBOX_INDICATOR].states.insert("indeterminate");
+            }
+            updateAllControlTitle();
+        });
+    }
 
     set_layout:
     for (const auto &v  : mControlDetails) {
@@ -330,22 +352,34 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
     auto &detail = mControlDetails[controlName];
     if (event->type() == QEvent::Enter) {
         detail.states.insert("hover");
+        if (controlName == "QCheckBox") {
+            mControlDetails[QCHECKBOX_INDICATOR].states.insert("hover");
+        }
         changed = true;
     } else if (event->type() == QEvent::Leave) {
         detail.states.remove("hover");
+        if (controlName == "QCheckBox") {
+            mControlDetails[QCHECKBOX_INDICATOR].states.remove("hover");
+        }
         changed = true;
     }
     if (dynamic_cast<QWidget *>(watched)) {
         if (event->type() == QEvent::FocusIn) {
             detail.states.insert("focus");
+            if (controlName == "QCheckBox") {
+                mControlDetails[QCHECKBOX_INDICATOR].states.insert("focus");
+            }
             changed = true;
         } else if (event->type() == QEvent::FocusOut) {
             detail.states.remove("focus");
+            if (controlName == "QCheckBox") {
+                mControlDetails[QCHECKBOX_INDICATOR].states.remove("focus");
+            }
             changed = true;
         }
     }
     if (changed) {
-        updateTitle(controlName);
+        updateAllControlTitle();
     }
 
 }
