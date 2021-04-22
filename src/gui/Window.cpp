@@ -4,7 +4,6 @@
 
 #include "Window.hpp"
 #include <QtWidgets>
-#include <QMouseEvent>
 
 #include "QssEditor.hpp"
 #include "Utils.hpp"
@@ -103,7 +102,11 @@ public:
     Window *q_ptr;
     QHBoxLayout *mLayout;
     QSplitter *mSplitter;
-    QTabWidget *mWidgetPage;
+    QWidget *mWidgetPage;
+    QHBoxLayout *mWidgetPageLayout;
+    QButtonGroup *mIndexButtonGroup;
+    QToolButton *mIndexButtons[wt_widgetCount];
+    QStackedWidget *mStackedWidget;
     QWidget *mPages[wt_widgetCount];
     QWidget *mEditPage;
     QssEditor *mEditor;
@@ -128,13 +131,29 @@ WindowPrivate::WindowPrivate(Window *p) :
     initWidget(mLayout, q);
     initWidget(mSplitter, q);
     initWidget(mWidgetPage, q);
-    initWidgets(mPages, mWidgetPage);
+    initWidget(mWidgetPageLayout, mWidgetPage);
+    initWidget(mIndexButtonGroup, mWidgetPage);
+    initWidgets(mIndexButtons, mWidgetPage);
+    initWidget(mStackedWidget, mWidgetPage);
+    initWidgets(mPages, mStackedWidget);
     initWidget(mEditPage, q);
     initWidget(mEditor, q);
     initWidget(mUpdate, q);
-    q->setMinimumSize(800, 600);
+    q->setMinimumSize(1000, 600);
 
-    mWidgetPage->setTabPosition(QTabWidget::West);
+    auto vbox = new QVBoxLayout;
+    for (int i = 0; i < wt_widgetCount; ++i) {
+        mIndexButtons[i]->setText(widgetName((WidgetType) i));
+        mIndexButtons[i]->setCheckable(true);
+        vbox->addWidget(mIndexButtons[i]);
+        mIndexButtonGroup->addButton(mIndexButtons[i], i);
+        mStackedWidget->addWidget(mPages[i]);
+    }
+    mIndexButtons[0]->setChecked(true);
+    mIndexButtonGroup->setExclusive(true);
+    vbox->addStretch(1);
+    mWidgetPageLayout->addLayout(vbox);
+    mWidgetPageLayout->addWidget(mStackedWidget);
 
     addQWidgetPage();
     addQFramePage();
@@ -153,7 +172,7 @@ WindowPrivate::WindowPrivate(Window *p) :
     mEditor->setText("QWidget {\n    background:#eeeeee;\n}\n\n"
                      "QWidget:disabled {\n    background:#cccccc;\n}");
 
-    auto vbox = new QVBoxLayout(mEditPage);
+    vbox = new QVBoxLayout(mEditPage);
     vbox->addWidget(mEditor);
     vbox->addWidget(mUpdate);
     mLayout->addWidget(mSplitter);
@@ -173,7 +192,6 @@ QWidget *WindowPrivate::initPage(WidgetType type, QGridLayout *&grid)
 
     pageLayout->addLayout(grid);
     pageLayout->addStretch(1);
-    mWidgetPage->addTab(page, page->windowTitle());
     return page;
 }
 
@@ -342,16 +360,12 @@ void WindowPrivate::addQComboBoxPage()
     e = new Type;
     setSize(e);
     e->addItems(textList);
-    e->setEditable(true);
-    e->setEditable(false);
     e->setDisabled(true);
     grid->addWidget(new Showcase(e, page, slp_south), 0, 1, Qt::AlignHCenter);
 
     e = new Type;
     setSize(e);
     e->addItems(textList);
-    e->setEditable(true);
-    e->setEditable(false);
     grid->addWidget(new Showcase(e, page, slp_south), 1, 0, Qt::AlignHCenter);
 }
 
@@ -390,6 +404,11 @@ Window::Window(QWidget *parent) :
         QString qss = d_ptr->mEditor->toPlainText();
         updateStyleSheet(this, qss);
     });
+    connect(d->mIndexButtonGroup,
+            static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked),
+            d->mStackedWidget,
+            &QStackedWidget::setCurrentIndex
+    );
 }
 
 void Window::translate()

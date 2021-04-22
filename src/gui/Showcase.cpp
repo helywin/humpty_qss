@@ -282,7 +282,11 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
             mainControlDetail().type = "read-only";
         }
 
-//        getChildrenByClassNames(dComboBox, {""});
+//        auto childList = getChildrenByClassNames(dComboBox, {"QComboBoxPrivateContainer",
+//                                                            "QComboBoxListView"});
+//        if (!childList.isEmpty()) {
+            dComboBox->view()->installEventFilter(mEventListener);
+//        }
     }
 
     set_layout:
@@ -295,10 +299,6 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
     } else {
         mLayout->insertWidget(0, mContent, 0, Qt::AlignCenter);
     }
-//
-//    if (dynamic_cast<QComboBox *>(mContent)) {
-//        assert(!getChildrenByClassNames(mContent, {"QComboBoxPrivateContainer"}).isEmpty());
-//    }
 
     updateAllControlTitle();
 }
@@ -308,6 +308,18 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
     if (!watched) {
         return;
     }
+    bool changed = false;
+    if (watched->metaObject()->className() == QString("QComboBoxListView")) {
+        if (event->type() == QEvent::FocusIn) {
+            mControlDetails[mControlName].states.insert("on");
+            changed = true;
+        } else if (event->type() == QEvent::FocusOut) {
+            mControlDetails[mControlName].states.remove("on");
+            changed = true;
+        }
+//        QMetaEnum metaEnum = QMetaEnum::fromType<QEvent::Type>();
+//        qDebug() << metaEnum.valueToKey(event->type());
+    }
     if (!watched->dynamicPropertyNames().contains("controlName")) {
         return;
     }
@@ -315,11 +327,7 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
     if (controlName.isEmpty()) {
         return;
     }
-    bool changed = false;
     auto &detail = mControlDetails[controlName];
-//    if (event->type() == QEvent::Create) {
-//        qDebug() << watched->metaObject()->className() << ": create";
-//    }
     if (event->type() == QEvent::Enter) {
         detail.states.insert("hover");
         changed = true;
@@ -334,16 +342,6 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
         } else if (event->type() == QEvent::FocusOut) {
             detail.states.remove("focus");
             changed = true;
-        }
-    }
-    if (dynamic_cast<QComboBox *>(watched)) {
-        if (event->type() == QEvent::MouseButtonPress) {
-            assert(!getChildrenByClassNames(watched, {"QComboBoxPrivateContainer"}).isEmpty());
-            QTimer::singleShot(400, [watched] {
-            });
-        } else if (event->type() == QEvent::Enter) {
-            assert(!getChildrenByClassNames(watched, {"QComboBoxPrivateContainer"}).isEmpty());
-            std::cout << objectSubtree(watched).toStdString() << std::endl;
         }
     }
     if (changed) {

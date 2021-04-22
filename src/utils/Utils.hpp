@@ -68,6 +68,13 @@ COM_UTILS_API void blockEvent(QWidget *widget, EventBlockFlags flags, QObject *p
 COM_UTILS_API void blockEvent(QWidget *widget, EventFlags flags, QObject *parent);
 COM_UTILS_API void changeFonts(QWidget *widget, const QString &family);
 
+template<typename T>
+inline QString enumToString(T e)
+{
+    static_assert(std::is_enum_v<T>);
+    return QMetaEnum::fromType<T>().valueToKey(e);
+}
+
 }   // namespace Com
 
 #endif   //SOLAR_PRO_WIDGETCOM_HPP
