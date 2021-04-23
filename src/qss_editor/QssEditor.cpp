@@ -65,7 +65,6 @@ void QssEditor::keyPressEvent(QKeyEvent *e)
 
     }
     QTextEdit::keyPressEvent(e);
-    qDebug() << textCursor().positionInBlock();
 }
 
 QChar QssEditor::findChar(int offset) const

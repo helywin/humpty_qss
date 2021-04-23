@@ -30,7 +30,7 @@ QLabel
 QMenu
 QProgressBar
  QPushButton
-QRadioButton
+ QRadioButton
 QScrollArea
 QScrollBar
 QSizeGrip
@@ -44,6 +44,34 @@ QToolBox
  QWidget
 
 */
+
+class GridLayoutHelper
+{
+public:
+    explicit GridLayoutHelper(QGridLayout *layout, int columnCount = 1) :
+            mLayout(layout),
+            mColumnCount(columnCount)
+    {
+        assert(mColumnCount > 0);
+        assert(mLayout);
+    }
+
+    void addWidget(QWidget *widget)
+    {
+        mLayout->addWidget(widget, mCurrentRow, mCurrentColumn, Qt::AlignCenter);
+        mCurrentColumn += 1;
+        if (mCurrentColumn == mColumnCount) {
+            mCurrentRow += 1;
+            mCurrentColumn = 0;
+        }
+    }
+
+private:
+    QGridLayout *mLayout;
+    const int mColumnCount;
+    int mCurrentRow = 0;
+    int mCurrentColumn = 0;
+};
 
 void updateStyleSheet(QWidget *parent, const QString &qss)
 {
@@ -87,6 +115,7 @@ public:
     void addQLineEditPage();
     void addQComboBoxPage();
     void addQCheckBoxPage();
+    void addQRadioButtonPage();
 };
 
 WindowPrivate::WindowPrivate(Window *p) :
@@ -106,6 +135,7 @@ WindowPrivate::WindowPrivate(Window *p) :
     initWidget(mUpdate, q);
     q->setMinimumSize(1000, 600);
 
+    mStackedWidget->setMinimumWidth(600);
     auto vbox = new QVBoxLayout;
     for (int i = 0; i < wt_widgetCount; ++i) {
         mIndexButtons[i]->setText(widgetName((WidgetType) i));
@@ -128,6 +158,7 @@ WindowPrivate::WindowPrivate(Window *p) :
     addQLineEditPage();
     addQComboBoxPage();
     addQCheckBoxPage();
+    addQRadioButtonPage();
 
     QssEditorConfig config;
     config.setTabReplace(true);
@@ -135,7 +166,10 @@ WindowPrivate::WindowPrivate(Window *p) :
     mEditor->setEditorConfig(config);
     mEditor->setFontFamily("consolas");
     mEditor->setText("QWidget {\n    background:#eeeeee;\n}\n\n"
-                     "QWidget:disabled {\n    background:#cccccc;\n}");
+                     "QWidget:disabled {\n    background:#cccccc;\n}\n"
+                     ".QLabel {\n"
+                     "    qproperty-indent: 10;\n"
+                     "}");
 
     vbox = new QVBoxLayout(mEditPage);
     vbox->addWidget(mEditor);
@@ -169,32 +203,34 @@ void WindowPrivate::addQWidgetPage()
 {
     QGridLayout *grid;
     auto page = initPage(wt_widget, grid);
+    GridLayoutHelper helper(grid);
     using Type = QWidget;
 
     auto e = new Type;
     setSize(e);
-    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setDisabled(true);
-    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 }
 
 void WindowPrivate::addQFramePage()
 {
     QGridLayout *grid;
     auto page = initPage(wt_frame, grid);
-
+    GridLayoutHelper helper(grid);
     using Type = QFrame;
+
     auto e = new Type;
     setSize(e);
-    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;;
     setSize(e);
     e->setDisabled(true);
-    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 }
 
 void WindowPrivate::addQLabelPage()
@@ -202,18 +238,19 @@ void WindowPrivate::addQLabelPage()
     const QString text = "标签/Label";
     QGridLayout *grid;
     auto page = initPage(wt_label, grid);
+    GridLayoutHelper helper(grid);
     using Type = QLabel;
 
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 }
 
 void WindowPrivate::addQPushButton()
@@ -221,24 +258,25 @@ void WindowPrivate::addQPushButton()
     const QString text = "按钮/PushButton";
     QGridLayout *grid;
     auto page = initPage(wt_pushButton, grid);
+    GridLayoutHelper helper(grid);
     using Type = QPushButton;
 
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setCheckable(true);
-    grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 }
 
 void WindowPrivate::addQToolButton()
@@ -246,24 +284,25 @@ void WindowPrivate::addQToolButton()
     const QString text = "按钮/ToolButton";
     QGridLayout *grid;
     auto page = initPage(wt_toolButton, grid);
+    GridLayoutHelper helper(grid);
     using Type = QToolButton;
 
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setCheckable(true);
-    grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 }
 
 void WindowPrivate::addQLineEditPage()
@@ -271,36 +310,37 @@ void WindowPrivate::addQLineEditPage()
     const QString text = "行编辑/LineEdit";
     QGridLayout *grid;
     auto page = initPage(wt_lineEdit, grid);
+    GridLayoutHelper helper(grid);
     using Type = QLineEdit;
 
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    grid->addWidget(new Showcase(e, page), 0, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    grid->addWidget(new Showcase(e, page), 0, 1, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setReadOnly(true);
-    grid->addWidget(new Showcase(e, page), 1, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setEchoMode(QLineEdit::Password);
-    grid->addWidget(new Showcase(e, page), 1, 1, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text + "+ clear");
     e->setClearButtonEnabled(true);
-    grid->addWidget(new Showcase(e, page), 2, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 }
 
 /* *********************************************************************************
@@ -314,24 +354,25 @@ void WindowPrivate::addQComboBoxPage()
     const QStringList textList = {"红楼梦", "三国演义", "西游记", "水浒传"};
     QGridLayout *grid;
     auto page = initPage(wt_comboBox, grid);
+    GridLayoutHelper helper(grid);
     using Type = QComboBox;
 
     auto e = new Type;
     setSize(e);
     e->setEditable(true);
     e->addItems(textList);
-    grid->addWidget(new Showcase(e, page, slp_south), 0, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page, slp_south));
 
     e = new Type;
     setSize(e);
     e->addItems(textList);
     e->setDisabled(true);
-    grid->addWidget(new Showcase(e, page, slp_south), 0, 1, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page, slp_south));
 
     e = new Type;
     setSize(e);
     e->addItems(textList);
-    grid->addWidget(new Showcase(e, page, slp_south), 1, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page, slp_south));
 }
 
 void WindowPrivate::addQCheckBoxPage()
@@ -339,24 +380,45 @@ void WindowPrivate::addQCheckBoxPage()
     const QString text = "复选/CheckBox";
     QGridLayout *grid;
     auto page = initPage(wt_checkBox, grid);
+    GridLayoutHelper helper(grid);
     using Type = QCheckBox;
 
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    grid->addWidget(new Showcase(e, page, slp_north), 0, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    grid->addWidget(new Showcase(e, page, slp_north), 0, 1, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setTristate(true);
-    grid->addWidget(new Showcase(e, page, slp_north), 1, 0, Qt::AlignHCenter);
+    helper.addWidget(new Showcase(e, page));
+}
+
+void WindowPrivate::addQRadioButtonPage()
+{
+    const QString text = "单选/RadioButton";
+    QGridLayout *grid;
+    auto page = initPage(wt_radioButton, grid);
+    GridLayoutHelper helper(grid);
+    using Type = QRadioButton;
+
+    auto e = new Type;
+    setSize(e);
+    e->setText(text);
+    helper.addWidget(new Showcase(e, page));
+
+    e = new Type;
+    setSize(e);
+    e->setText(text);
+    e->setDisabled(true);
+    helper.addWidget(new Showcase(e, page));
 }
 
 Window::Window(QWidget *parent) :
@@ -370,7 +432,7 @@ Window::Window(QWidget *parent) :
         updateStyleSheet(this, qss);
     });
     connect(d->mIndexButtonGroup,
-            static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked),
+            &QButtonGroup::idClicked,
             d->mStackedWidget,
             &QStackedWidget::setCurrentIndex
     );

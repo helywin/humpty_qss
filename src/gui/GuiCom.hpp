@@ -18,6 +18,7 @@ enum WidgetType
     wt_lineEdit,
     wt_comboBox,
     wt_checkBox,
+    wt_radioButton,
     wt_widgetCount,
 };
 

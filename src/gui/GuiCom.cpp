@@ -13,6 +13,7 @@ const char *cWidgetNames[] = {
         "QLineEdit",
         "QComboBox",
         "QCheckBox",
+        "QRadioButton",
 };
 
 QString widgetName(WidgetType type)

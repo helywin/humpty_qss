@@ -20,3 +20,5 @@ generate_meta_info(
         ICON "${ICON_PATH_ESCAPED}")
 target_sources(${CURRENT_MODULE_TARGET} PRIVATE ${META_FILE})
 generate_qrc()
+#set_property(TARGET ${CURRENT_MODULE_TARGET} PROPERTY
+#        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

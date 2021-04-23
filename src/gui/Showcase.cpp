@@ -16,6 +16,7 @@
 #include "GuiCom.hpp"
 
 #define QCHECKBOX_INDICATOR "QCheckBox::indicator"
+#define QRADIOBUTTON_INDICATOR "QRadioButton::indicator"
 
 using namespace Com;
 
@@ -309,6 +310,41 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
             }
             updateAllControlTitle();
         });
+        QObject::connect(dCheckBox, &QCheckBox::pressed, [this] {
+            mainControlDetail().states.insert("pressed");
+            mControlDetails[QCHECKBOX_INDICATOR].states.insert("pressed");
+            updateAllControlTitle();
+        });
+        QObject::connect(dCheckBox, &QCheckBox::released, [this] {
+            mainControlDetail().states.remove("pressed");
+            mControlDetails[QCHECKBOX_INDICATOR].states.remove("pressed");
+            updateAllControlTitle();
+        });
+    }
+
+    auto dRadioButton = dynamic_cast<QRadioButton *>(mContent);
+    if (dRadioButton) {
+        mControlDetails[QRADIOBUTTON_INDICATOR] = ControlDetail(q);
+        QObject::connect(dRadioButton, &QRadioButton::clicked, [this](bool checked) {
+            if (checked) {
+                mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("checked");
+                mainControlDetail().states.insert("checked");
+            } else {
+                mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("checked");
+                mainControlDetail().states.remove("checked");
+            }
+            updateAllControlTitle();
+        });
+        QObject::connect(dRadioButton, &QRadioButton::pressed, [this] {
+            mainControlDetail().states.insert("pressed");
+            mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("pressed");
+            updateAllControlTitle();
+        });
+        QObject::connect(dRadioButton, &QRadioButton::released, [this] {
+            mainControlDetail().states.remove("pressed");
+            mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("pressed");
+            updateAllControlTitle();
+        });
     }
 
     set_layout:
@@ -355,11 +391,17 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
         if (controlName == "QCheckBox") {
             mControlDetails[QCHECKBOX_INDICATOR].states.insert("hover");
         }
+        if (controlName == "QRadioButton") {
+            mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("hover");
+        }
         changed = true;
     } else if (event->type() == QEvent::Leave) {
         detail.states.remove("hover");
         if (controlName == "QCheckBox") {
             mControlDetails[QCHECKBOX_INDICATOR].states.remove("hover");
+        }
+        if (controlName == "QRadioButton") {
+            mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("hover");
         }
         changed = true;
     }
@@ -369,11 +411,17 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
             if (controlName == "QCheckBox") {
                 mControlDetails[QCHECKBOX_INDICATOR].states.insert("focus");
             }
+            if (controlName == "QRadioButton") {
+                mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("focus");
+            }
             changed = true;
         } else if (event->type() == QEvent::FocusOut) {
             detail.states.remove("focus");
             if (controlName == "QCheckBox") {
                 mControlDetails[QCHECKBOX_INDICATOR].states.remove("focus");
+            }
+            if (controlName == "QRadioButton") {
+                mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("focus");
             }
             changed = true;
         }
