@@ -19,6 +19,7 @@ include(ReadVersion)
 include(Submodule)
 include(UpdateBuildTime)
 include(GenerateQrc)
+include(WinDeployQt)
 
 set(QT_VERSION 5)
 find_package(Qt${QT_VERSION} COMPONENTS Core Widgets Gui PrintSupport Designer REQUIRED)
