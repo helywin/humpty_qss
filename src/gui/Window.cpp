@@ -432,7 +432,11 @@ Window::Window(QWidget *parent) :
         updateStyleSheet(this, qss);
     });
     connect(d->mIndexButtonGroup,
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
             &QButtonGroup::idClicked,
+#else
+            static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked),
+#endif
             d->mStackedWidget,
             &QStackedWidget::setCurrentIndex
     );

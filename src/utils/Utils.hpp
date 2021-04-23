@@ -8,6 +8,7 @@
 #include <utility>
 #include <QFlags>
 #include <QEvent>
+#include <QStringList>
 #include "Utils_Export.hpp"
 
 class QWidget;
@@ -72,7 +73,26 @@ template<typename T>
 inline QString enumToString(T e)
 {
     static_assert(std::is_enum_v<T>);
-    return QMetaEnum::fromType<T>().valueToKey(e);
+    if (QMetaEnum::fromType<T>().isFlag()) {
+        return QMetaEnum::fromType<T>().valueToKeys(e);
+    } else {
+        return QMetaEnum::fromType<T>().valueToKey(e);
+    }
+}
+
+template<typename T>
+inline QStringList flagsToStringList(QFlags<T> flags)
+{
+    static_assert(std::is_enum_v<T>);
+    int keyCount = QMetaEnum::fromType<T>().keyCount();
+    QStringList result;
+    for (int i = 0; i < keyCount; ++i) {
+        const char *key = QMetaEnum::fromType<T>().key(i);
+        if (flags.testFlag((T)QMetaEnum::fromType<T>().value(i))) {
+            result.append(key);
+        }
+    }
+    return result;
 }
 
 }   // namespace Com

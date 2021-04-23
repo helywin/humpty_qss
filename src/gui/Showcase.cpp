@@ -10,6 +10,7 @@
 #include <QMouseEvent>
 #include <QSet>
 #include <QDebug>
+#include <QTimer>
 #include <iostream>
 #include <QtWidgets>
 #include "Utils.hpp"
@@ -17,8 +18,92 @@
 
 #define QCHECKBOX_INDICATOR "QCheckBox::indicator"
 #define QRADIOBUTTON_INDICATOR "QRadioButton::indicator"
+#define QCOMBOBOX_DROPDOWN "QComboBox::drop-down"
+#define QCOMBOBOX_DOWNARROW "QComboBox::down-arrow"
 
 using namespace Com;
+
+class GlobalMouseListener : public QObject
+{
+Q_OBJECT
+public :
+    explicit GlobalMouseListener(QObject *parent = nullptr) :
+            QObject(parent)
+    {}
+
+signals:
+    void mouseEvent(QEvent::Type type, Qt::MouseButton button);
+};
+
+GlobalMouseListener *gMouseListener = nullptr;
+
+HHOOK hHook = nullptr;
+
+LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    QEvent::Type type;
+    Qt::MouseButton button;
+    bool emitSignal = true;
+    switch (wParam) {
+        case WM_LBUTTONDOWN:
+            type = QEvent::MouseButtonPress;
+            button = Qt::LeftButton;
+            break;
+        case WM_LBUTTONUP:
+            type = QEvent::MouseButtonRelease;
+            button = Qt::LeftButton;
+            break;
+        case WM_LBUTTONDBLCLK:
+            type = QEvent::MouseButtonDblClick;
+            button = Qt::LeftButton;
+            break;
+        case WM_RBUTTONDOWN:
+            type = QEvent::MouseButtonPress;
+            button = Qt::RightButton;
+            break;
+        case WM_RBUTTONUP:
+            type = QEvent::MouseButtonRelease;
+            button = Qt::RightButton;
+            break;
+        case WM_RBUTTONDBLCLK:
+            type = QEvent::MouseButtonPress;
+            button = Qt::RightButton;
+            break;
+        case WM_MBUTTONDOWN:
+            type = QEvent::MouseButtonPress;
+            button = Qt::MidButton;
+            break;
+        case WM_MBUTTONUP:
+            type = QEvent::MouseButtonRelease;
+            button = Qt::MidButton;
+            break;
+        case WM_MBUTTONDBLCLK:
+            type = QEvent::MouseButtonDblClick;
+            button = Qt::MidButton;
+            break;
+        default:
+            emitSignal = false;
+            break;
+    }
+    if (emitSignal) {
+        //qDebug() << "global mouse event " << type << " " << button;
+        QTimer::singleShot(0, [=] {
+            gMouseListener->mouseEvent(type, button);
+        });
+    }
+    return CallNextHookEx(hHook, nCode, wParam, lParam);
+}
+
+void regWindowHook()
+{
+    hHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, nullptr, 0);
+    if (hHook == nullptr) {
+        qDebug() << "Hook failed";
+    } else {
+        qDebug() << "Hook succeeded";
+        gMouseListener = new GlobalMouseListener;
+    }
+}
 
 void printChildrenWidgetInfo(QWidget *w)
 {
@@ -154,6 +239,9 @@ ShowcasePrivate::ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPo
         q_ptr(p)
 {
     Q_Q(Showcase);
+    if (!hHook) {
+        regWindowHook();
+    }
     initWidget(mLayout, q);
     initWidget(mEventListener, q);
     setWidget(content, pos);
@@ -282,6 +370,8 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
 
     auto dComboBox = dynamic_cast<QComboBox *>(mContent);
     if (dComboBox) {
+        mControlDetails[QCOMBOBOX_DROPDOWN] = ControlDetail(q);
+        mControlDetails[QCOMBOBOX_DOWNARROW] = ControlDetail(q);
         if (!dComboBox->isEditable()) {
             mainControlDetail().type = "read-only";
         }
@@ -289,7 +379,16 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
 //        auto childList = getChildrenByClassNames(dComboBox, {"QComboBoxPrivateContainer",
 //                                                            "QComboBoxListView"});
 //        if (!childList.isEmpty()) {
-            dComboBox->view()->installEventFilter(mEventListener);
+        dComboBox->view()->installEventFilter(mEventListener);
+        // listen to system event through win api
+        QObject::connect(gMouseListener, &GlobalMouseListener::mouseEvent,
+                         [this](QEvent::Type type, Qt::MouseButton button) {
+                             //qDebug() << "get response";
+                             if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
+                                 mControlDetails[QCOMBOBOX_DROPDOWN].states.remove("pressed");
+                                 mControlDetails[QCOMBOBOX_DOWNARROW].states.remove("pressed");
+                             }
+                         });
 //        }
     }
     //indeterminate
@@ -375,6 +474,12 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
             mControlDetails[mControlName].states.remove("on");
             changed = true;
         }
+            // doesn't worked!!!!
+        else if (event->type() == QEvent::MouseButtonRelease) {
+            mControlDetails[QCOMBOBOX_DROPDOWN].states.remove("pressed");
+            mControlDetails[QCOMBOBOX_DOWNARROW].states.remove("pressed");
+            changed = true;
+        }
 //        QMetaEnum metaEnum = QMetaEnum::fromType<QEvent::Type>();
 //        qDebug() << metaEnum.valueToKey(event->type());
     }
@@ -426,6 +531,32 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
             changed = true;
         }
     }
+    if (dynamic_cast<QComboBox *>(watched)) {
+        auto comboBox = dynamic_cast<QComboBox *>(watched);
+        if (event->type() == QEvent::MouseButtonPress &&
+            dynamic_cast<QMouseEvent *>(event)->button() == Qt::LeftButton) {
+            auto mouseEvent = (QMouseEvent *) event;
+            QStyleOptionComboBox opt;
+            opt.initFrom(mContent);
+            opt.editable = comboBox->isEditable();
+            opt.subControls = QStyle::SC_All;
+            auto subControl = mContent->style()
+                    ->hitTestComplexControl(QStyle::CC_ComboBox, &opt,
+                                            mouseEvent->pos(),
+                                            mContent);
+            if (subControl == QStyle::SC_ComboBoxArrow) {
+                mControlDetails[QCOMBOBOX_DROPDOWN].states.insert("pressed");
+                mControlDetails[QCOMBOBOX_DOWNARROW].states.insert("pressed");
+            }
+            changed = true;
+        }
+            // doesn't worked!!!!
+        else if (event->type() == QEvent::MouseButtonRelease) {
+            mControlDetails[QCOMBOBOX_DROPDOWN].states.remove("pressed");
+            mControlDetails[QCOMBOBOX_DOWNARROW].states.remove("pressed");
+            changed = true;
+        }
+    }
     if (changed) {
         updateAllControlTitle();
     }
@@ -458,3 +589,5 @@ bool EventListener::eventFilter(QObject *watched, QEvent *event)
     emit eventOccurred(watched, event);
     return false;
 }
+
+#include "Showcase.moc"
