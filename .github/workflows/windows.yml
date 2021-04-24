@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+
+name: windows
+
+# Controls when the action will run.
+on:
+    # Triggers the workflow on push or pull request events but only for the main branch
+    push:
+        branches: [ main, master, dev ]
+    pull_request:
+        branches: [ main, master, dev ]
+
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+    # This workflow contains a single job called "build"
+    build:
+        name: Build
+        # The type of runner that the job will run on
+        runs-on: windows-latest
+        strategy:
+            matrix:
+                qt_ver: [ 5.15.2 ]
+                qt_target: [ desktop ]
+                qt_arch: [ win64_msvc2019_64 ]
+                include:
+                    -   qt_arch: win64_msvc2019_64
+                        msvc_arch: x64
+
+        # Steps represent a sequence of tasks that will be executed as part of the job
+        steps:
+            # Install Qt Environment
+            -   name: Install Qt
+                uses: jurplel/install-qt-action@v2
+                with:
+                    version: ${{ matrix.qt_ver }}
+                    target: ${{ matrix.qt_target }}
+                    arch: ${{ matrix.qt_arch }}
+            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+            -   uses: actions/checkout@v2
+            # Runs a single command using the runners shell
+            -   name: build project
+                run: |
+                    mkdir build && cd build
+                    cmake .. -DCMAKE_PREFIX_PATH=%Qt5_Dir%
+                    cmake --build . --target HumptyQss.Gui
