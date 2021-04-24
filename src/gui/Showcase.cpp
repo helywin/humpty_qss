@@ -50,6 +50,11 @@ LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
     QEvent::Type type;
     Qt::MouseButton button;
     bool emitSignal = true;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    const auto midButton = Qt::MiddleButton;
+#else
+    const auto midButton = Qt::MidButton;
+#endif
     switch (wParam) {
         case WM_LBUTTONDOWN:
             type = QEvent::MouseButtonPress;
@@ -77,15 +82,15 @@ LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             break;
         case WM_MBUTTONDOWN:
             type = QEvent::MouseButtonPress;
-            button = Qt::MidButton;
+            button = midButton;
             break;
         case WM_MBUTTONUP:
             type = QEvent::MouseButtonRelease;
-            button = Qt::MidButton;
+            button = midButton;
             break;
         case WM_MBUTTONDBLCLK:
             type = QEvent::MouseButtonDblClick;
-            button = Qt::MidButton;
+            button = midButton;
             break;
         default:
             emitSignal = false;
