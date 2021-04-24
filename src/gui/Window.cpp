@@ -11,6 +11,8 @@
 #include "QssEditorConfig.hpp"
 #include "GuiCom.hpp"
 
+QList<QWidget *> gNoParentWidgets;
+
 using namespace Com;
 
 
@@ -73,16 +75,17 @@ private:
     int mCurrentColumn = 0;
 };
 
-void updateStyleSheet(QWidget *parent, const QString &qss)
+void updateStyleSheet(QWidget *parent, const QString &qss, bool needProperty = true)
 {
-    if (parent->property("test").toBool()) {
+    if (!needProperty || parent->property("test").toBool()) {
         parent->setStyleSheet(qss);
         parent->style()->polish(parent);
-    }
-    for (auto child : parent->children()) {
-        auto w = dynamic_cast<QWidget *>(child);
-        if (w) {
-            updateStyleSheet(w, qss);
+        for (auto child : parent->children()) {
+            auto w = dynamic_cast<QWidget *>(child);
+            if (w) {
+                auto isMenu = dynamic_cast<QMenu *>(parent);
+                updateStyleSheet(w, qss, !isMenu);
+            }
         }
     }
 }
@@ -116,6 +119,7 @@ public:
     void addQComboBoxPage();
     void addQCheckBoxPage();
     void addQRadioButtonPage();
+    void addQMenuPage();
 };
 
 WindowPrivate::WindowPrivate(Window *p) :
@@ -159,10 +163,12 @@ WindowPrivate::WindowPrivate(Window *p) :
     addQComboBoxPage();
     addQCheckBoxPage();
     addQRadioButtonPage();
+    addQMenuPage();
 
     QssEditorConfig config;
     config.setTabReplace(true);
     config.setAutoIndentation(true);
+    mEditor->setMinimumWidth(320);
     mEditor->setEditorConfig(config);
     mEditor->setFontFamily("consolas");
     mEditor->setText("QWidget {\n    background:#eeeeee;\n}\n\n"
@@ -421,6 +427,76 @@ void WindowPrivate::addQRadioButtonPage()
     helper.addWidget(new Showcase(e, page));
 }
 
+void WindowPrivate::addQMenuPage()
+{
+    Q_Q(Window);
+    const QString text = "菜单/Menu";
+    QGridLayout *grid;
+    auto page = initPage(wt_menu, grid);
+    GridLayoutHelper helper(grid);using Type = QMenu;
+
+    auto e = new Type;
+    e->setTitle(text);
+    auto menu = new QMenu("expand", e);
+    menu->addAction(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_ComputerIcon),
+                    "computer");
+    e->addMenu(menu);
+    e->addSection(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_DriveDVDIcon),
+                  "-- exclusive --");
+    auto ag = new QActionGroup(q);
+    QAction *a;
+    ag->setExclusive(true);
+    ag->addAction((a = new QAction("none", e),
+            a->setCheckable(true),
+            a->setChecked(true),
+            a));
+    ag->addAction((a = new QAction("dir", e),
+            a->setIcon(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_DirIcon)),
+            a->setCheckable(true),
+            a));
+    ag->addAction((a = new QAction("QMenu::indicator:exclusive", e),
+            a->setCheckable(true),
+            a->setData(true),
+            a));
+    e->addActions(ag->actions());
+    e->addSection("-- non-exclusive --");
+    ag = new QActionGroup(q);
+    ag->setExclusive(false);
+    ag->addAction((a = new QAction("none", e),
+            a->setCheckable(true),
+            a->setChecked(true),
+            a));
+    ag->addAction((a = new QAction("trash", e),
+            a->setIcon(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_TrashIcon)),
+            a->setCheckable(true),
+            a->setChecked(true),
+            a));
+    ag->addAction((a = new QAction("QMenu::indicator:non-exclusive", e),
+            a->setCheckable(true),
+            a->setData(true),
+            a));
+    e->addActions(ag->actions());
+    e->addSection("-- item --");
+    e->addAction((a = new QAction("QMenu::item", e),
+            a->setCheckable(true),
+            a->setData(true),
+            a));
+    e->addAction((a = new QAction("QMenu::icon", e),
+            a->setCheckable(true),
+            a->setData(true),
+            a->setIcon(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon)),
+            a));
+    e->addAction((a = new QAction("QMenu:item:disabled", e),
+            a->setDisabled(true),
+            a));
+    auto button = new QPushButton;
+    QObject::connect(button, &QPushButton::clicked, [e] {
+        e->exec(QCursor::pos());
+    });
+    gNoParentWidgets.append(e);
+    helper.addWidget(new Showcase(e, page, slp_south, button));
+}
+
 Window::Window(QWidget *parent) :
         QWidget(parent),
         d_ptr(new WindowPrivate(this))
@@ -430,6 +506,9 @@ Window::Window(QWidget *parent) :
     connect(d->mUpdate, &QPushButton::clicked, [this] {
         QString qss = d_ptr->mEditor->toPlainText();
         updateStyleSheet(this, qss);
+        for (auto w : gNoParentWidgets) {
+            updateStyleSheet(w, qss);
+        }
     });
     connect(d->mIndexButtonGroup,
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
@@ -449,5 +528,9 @@ void Window::translate()
 }
 
 Window::~Window()
-{}
+{
+    for (auto w : gNoParentWidgets) {
+        delete w;
+    }
+}
 

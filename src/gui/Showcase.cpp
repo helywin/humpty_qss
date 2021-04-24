@@ -20,6 +20,12 @@
 #define QRADIOBUTTON_INDICATOR "QRadioButton::indicator"
 #define QCOMBOBOX_DROPDOWN "QComboBox::drop-down"
 #define QCOMBOBOX_DOWNARROW "QComboBox::down-arrow"
+#define QMENU_ITEM "QMenu::item"
+#define QMENU_ICON "QMenu::icon"
+#define QMENU_INDICATOR_EXCLUSIVE "QMenu::indicator:exclusive"
+#define QMENU_INDICATOR_NONEEXCLUSIVE "QMenu::indicator:non-exclusive"
+#define QMENU_RIGHTARROW "QMenu::right-arrow"
+
 
 using namespace Com;
 
@@ -226,16 +232,18 @@ public:
     QString mControlName;
     EventListener *mEventListener;
 
-    explicit ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPosition pos);
+    explicit ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPosition pos,
+                             QWidget *trigger);
     void updateTitle(const QString &name);
     void updateAllControlTitle();
     void updateMainControlTitle();
-    void setWidget(QWidget *w, ShowcaseWidgetPosition pos);
+    void setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget *trigger);
     ControlDetail &mainControlDetail();
     void onEventOccurred(QObject *watched, QEvent *event);
 };
 
-ShowcasePrivate::ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPosition pos) :
+ShowcasePrivate::ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPosition pos,
+                                 QWidget *trigger) :
         q_ptr(p)
 {
     Q_Q(Showcase);
@@ -244,7 +252,7 @@ ShowcasePrivate::ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPo
     }
     initWidget(mLayout, q);
     initWidget(mEventListener, q);
-    setWidget(content, pos);
+    setWidget(content, pos, trigger);
 }
 
 void ShowcasePrivate::updateTitle(const QString &name)
@@ -278,7 +286,7 @@ ControlDetail &ShowcasePrivate::mainControlDetail()
     return mControlDetails[mControlName];
 }
 
-void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
+void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget *trigger)
 {
     Q_Q(Showcase);
     if (mContent) {
@@ -287,7 +295,6 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
     }
     mContent = w;
     mContent->setProperty("test", true);
-    mContent->setParent(q);
 
     mControlName = w->metaObject()->className();
     mContent->setProperty("controlName", mControlName);
@@ -446,15 +453,54 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos)
         });
     }
 
+    auto dMenu = dynamic_cast<QMenu *>(mContent);
+    if (dMenu) {
+        mControlDetails[QMENU_ITEM] = ControlDetail(q);
+        mControlDetails[QMENU_ICON] = ControlDetail(q);
+        mControlDetails[QMENU_INDICATOR_EXCLUSIVE] = ControlDetail(q);
+        mControlDetails[QMENU_INDICATOR_NONEEXCLUSIVE] = ControlDetail(q);
+        mControlDetails[QMENU_RIGHTARROW] = ControlDetail(q);
+
+        for (auto action : dMenu->actions()) {
+            QObject::connect(action, &QAction::hovered, [action, this] {
+                mControlDetails[QMENU_ITEM].states.remove("selected");
+                mControlDetails[QMENU_ICON].states.remove("selected");
+                mControlDetails[QMENU_INDICATOR_EXCLUSIVE].states.remove("selected");
+                mControlDetails[QMENU_INDICATOR_NONEEXCLUSIVE].states.remove("selected");
+                if (action->data().toBool()) {
+                    mControlDetails[action->text()].states.insert("selected");
+                }
+                updateAllControlTitle();
+            });
+            // listen specified QAction check state
+            if (action->data().toBool()) {
+                QObject::connect(action, &QAction::triggered, [action, this](bool checked) {
+                    if (checked) {
+                        mControlDetails[action->text()].states.insert("checked");
+                    } else {
+                        mControlDetails[action->text()].states.remove("checked");
+                    }
+                    updateTitle(action->text());
+                });
+            }
+        }
+    }
+
     set_layout:
     for (const auto &v  : mControlDetails) {
         mLayout->addWidget(v.display, 0, Qt::AlignCenter);
     }
-    if (pos == slp_south) {
-        mLayout->addWidget(mContent, 0, Qt::AlignCenter);\
-
+    QWidget *added = mContent;
+    if (trigger) {
+        added = trigger;
+        trigger->setParent(q);
     } else {
-        mLayout->insertWidget(0, mContent, 0, Qt::AlignCenter);
+        mContent->setParent(q);
+    }
+    if (pos == slp_south) {
+        mLayout->addWidget(added, 0, Qt::AlignCenter);
+    } else {
+        mLayout->insertWidget(0, added, 0, Qt::AlignCenter);
     }
 
     updateAllControlTitle();
@@ -466,6 +512,14 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
         return;
     }
     bool changed = false;
+    if (dynamic_cast<QMenu *>(watched) && (event->type() == QEvent::Close ||
+                                           event->type() == QEvent::Hide)) {
+        mControlDetails[QMENU_ITEM].states.remove("selected");
+        mControlDetails[QMENU_ICON].states.remove("selected");
+        mControlDetails[QMENU_INDICATOR_EXCLUSIVE].states.remove("selected");
+        mControlDetails[QMENU_INDICATOR_NONEEXCLUSIVE].states.remove("selected");
+        changed = true;
+    }
     if (watched->metaObject()->className() == QString("QComboBoxListView")) {
         if (event->type() == QEvent::FocusIn) {
             mControlDetails[mControlName].states.insert("on");
@@ -563,9 +617,10 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
 
 }
 
-Showcase::Showcase(QWidget *content, QWidget *parent, ShowcaseWidgetPosition pos) :
+Showcase::Showcase(QWidget *content, QWidget *parent, ShowcaseWidgetPosition pos,
+                   QWidget *trigger) :
         QWidget(parent),
-        d_ptr(new ShowcasePrivate(this, content, pos))
+        d_ptr(new ShowcasePrivate(this, content, pos, trigger))
 {
     Q_D(Showcase);
     connect(d->mEventListener, &EventListener::eventOccurred,

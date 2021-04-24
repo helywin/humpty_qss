@@ -19,6 +19,7 @@ enum WidgetType
     wt_comboBox,
     wt_checkBox,
     wt_radioButton,
+    wt_menu,
     wt_widgetCount,
 };
 
