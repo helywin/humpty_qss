@@ -495,6 +495,12 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget 
     auto dTabBar = dynamic_cast<QTabBar *>(mContent);
     if (dTabBar) {
         mControlDetails[QTABBAR_TAB] = ControlDetail(q);
+//        mControlDetails[]
+        QObject::connect(dTabBar, &QTabBar::currentChanged, [dTabBar, this](int index) {
+            if (dTabBar->tabText(index) == "") {
+
+            }
+        });
     }
 
     set_layout:

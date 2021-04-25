@@ -30,6 +30,7 @@
 #include <QFontDatabase>
 #include <QWidget>
 #include <QFile>
+#include <QDebug>
 #include "CrashHandler.hpp"
 #include "Logger.hpp"
 #include "version_info.h"
@@ -55,15 +56,24 @@ int main(int argc, char *argv[])
 #ifdef NO_CRASH_DIALOG
     handler->setExceptionFilterCallback(nullptr);
 #endif
-    QApplication app(argc, argv);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 1)
-    qputenv("QT_ENABLE_HIGHDPI_SCALING", "1");
-    QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+    if (!qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO")
+        && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
+        && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
+        && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS")) {
+        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    QApplication::setHighDpiScaleFactorRoundingPolicy(
+            Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
+    QApplication app(argc, argv);
     QFile file(":css/gui.css");
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QFont font = QApplication::font();
     font.setFamily("Microsoft YaHei");
+    // let hidpi font scale
+    font.setPointSize(12);
+    qDebug() << font.pixelSize();
     QApplication::setFont(font);
     Window window;
     window.setStyleSheet(QString(file.readAll()));
