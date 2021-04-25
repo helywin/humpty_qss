@@ -119,6 +119,7 @@ public:
     void addQCheckBoxPage();
     void addQRadioButtonPage();
     void addQMenuPage();
+    void addQTabBarPage();
     void addQTabWidgetPage();
 };
 
@@ -164,6 +165,7 @@ WindowPrivate::WindowPrivate(Window *p) :
     addQCheckBoxPage();
     addQRadioButtonPage();
     addQMenuPage();
+    addQTabBarPage();
     addQTabWidgetPage();
 
     QssEditorConfig config;
@@ -496,6 +498,27 @@ void WindowPrivate::addQMenuPage()
     });
     gNoParentWidgets.append(e);
     helper.addWidget(new Showcase(e, page, slp_south, button));
+}
+
+void WindowPrivate::addQTabBarPage()
+{
+    QGridLayout *grid;
+    auto page = initPage(wt_tabBar, grid);
+    GridLayoutHelper helper(grid);
+    using Type = QTabBar;
+
+    auto e = new Type;
+    e->setMinimumWidth(500);
+    QWidget *w;
+    e->addTab(":first");
+    e->addTab("QTabBar::tab");
+    e->addTab("disabled");
+    e->addTab(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
+              "icon");
+    e->addTab(":last");
+    e->setTabsClosable(true);
+    e->setTabEnabled(2, false);
+    helper.addWidget(new Showcase(e, page));
 }
 
 void WindowPrivate::addQTabWidgetPage()

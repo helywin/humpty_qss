@@ -25,6 +25,7 @@
 #define QMENU_INDICATOR_EXCLUSIVE "QMenu::indicator:exclusive"
 #define QMENU_INDICATOR_NONEEXCLUSIVE "QMenu::indicator:non-exclusive"
 #define QMENU_RIGHTARROW "QMenu::right-arrow"
+#define QTABBAR_TAB "QTabBar::tab"
 
 
 using namespace Com;
@@ -489,6 +490,11 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget 
                 });
             }
         }
+    }
+
+    auto dTabBar = dynamic_cast<QTabBar *>(mContent);
+    if (dTabBar) {
+        mControlDetails[QTABBAR_TAB] = ControlDetail(q);
     }
 
     set_layout:
