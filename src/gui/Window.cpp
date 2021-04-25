@@ -27,9 +27,9 @@ QDoubleSpinBox
 QFocusFrame
 QFontComboBox
 QLCDNumber
-QLabel
+ QLabel
  QLineEdit
-QMenu
+ QMenu
 QProgressBar
  QPushButton
  QRadioButton
@@ -75,17 +75,16 @@ private:
     int mCurrentColumn = 0;
 };
 
-void updateStyleSheet(QWidget *parent, const QString &qss, bool needProperty = true)
+void updateStyleSheet(QWidget *parent, const QString &qss)
 {
-    if (!needProperty || parent->property("test").toBool()) {
+    if (parent->property("test").toBool()) {
         parent->setStyleSheet(qss);
         parent->style()->polish(parent);
-        for (auto child : parent->children()) {
-            auto w = dynamic_cast<QWidget *>(child);
-            if (w) {
-                auto isMenu = dynamic_cast<QMenu *>(parent);
-                updateStyleSheet(w, qss, !isMenu);
-            }
+    }
+    for (auto child : parent->children()) {
+        auto w = dynamic_cast<QWidget *>(child);
+        if (w) {
+            updateStyleSheet(w, qss);
         }
     }
 }
@@ -120,6 +119,7 @@ public:
     void addQCheckBoxPage();
     void addQRadioButtonPage();
     void addQMenuPage();
+    void addQTabWidgetPage();
 };
 
 WindowPrivate::WindowPrivate(Window *p) :
@@ -164,6 +164,7 @@ WindowPrivate::WindowPrivate(Window *p) :
     addQCheckBoxPage();
     addQRadioButtonPage();
     addQMenuPage();
+    addQTabWidgetPage();
 
     QssEditorConfig config;
     config.setTabReplace(true);
@@ -495,6 +496,29 @@ void WindowPrivate::addQMenuPage()
     });
     gNoParentWidgets.append(e);
     helper.addWidget(new Showcase(e, page, slp_south, button));
+}
+
+void WindowPrivate::addQTabWidgetPage()
+{
+    QGridLayout *grid;
+    auto page = initPage(wt_tabWidget, grid);
+    GridLayoutHelper helper(grid);
+    using Type = QTabWidget;
+
+    auto e = new Type;
+    e->setMinimumWidth(400);
+    QWidget *w;
+    e->addTab((w = new QWidget(e),
+                      w->setMinimumHeight(50),
+                      w),
+              "tab");
+    e->addTab(new QWidget(e),
+              "tab disabled");
+    e->addTab(new QWidget(e),
+              qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
+              "tab_icon");
+    e->setTabEnabled(1, false);
+    helper.addWidget(new Showcase(e, page));
 }
 
 Window::Window(QWidget *parent) :

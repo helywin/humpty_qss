@@ -2,8 +2,4 @@
     <qresource prefix="/">
         <file>css/gui.css</file>
     </qresource>
-    <qresource prefix="/">
-    </qresource>
-    <qresource prefix="/">
-    </qresource>
 </RCC>
