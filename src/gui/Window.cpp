@@ -4,6 +4,7 @@
 
 #include "Window.hpp"
 #include <QtWidgets>
+#include <QSizePolicy>
 
 #include "QssEditor.hpp"
 #include "Utils.hpp"
@@ -145,15 +146,17 @@ WindowPrivate::WindowPrivate(Window *p) :
     for (int i = 0; i < wt_widgetCount; ++i) {
         mIndexButtons[i]->setText(widgetName((WidgetType) i));
         mIndexButtons[i]->setCheckable(true);
-        vbox->addWidget(mIndexButtons[i]);
+        mIndexButtons[i]->setSizePolicy(QSizePolicy::MinimumExpanding,
+                                        QSizePolicy::Preferred);
+        vbox->addWidget(mIndexButtons[i], 0);
         mIndexButtonGroup->addButton(mIndexButtons[i], i);
         mStackedWidget->addWidget(mPages[i]);
     }
     mIndexButtons[0]->setChecked(true);
     mIndexButtonGroup->setExclusive(true);
     vbox->addStretch(1);
-    mWidgetPageLayout->addLayout(vbox);
-    mWidgetPageLayout->addWidget(mStackedWidget);
+    mWidgetPageLayout->addLayout(vbox, 0);
+    mWidgetPageLayout->addWidget(mStackedWidget, 1);
 
     addQWidgetPage();
     addQFramePage();
@@ -510,12 +513,12 @@ void WindowPrivate::addQTabBarPage()
     auto e = new Type;
     e->setMinimumWidth(500);
     QWidget *w;
-    e->addTab(":first");
+    e->addTab("QTabBar:first");
     e->addTab("QTabBar::tab");
     e->addTab("disabled");
     e->addTab(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
               "icon");
-    e->addTab(":last");
+    e->addTab("QTabBar:last");
     e->setTabsClosable(true);
     e->setTabEnabled(2, false);
     helper.addWidget(new Showcase(e, page));

@@ -26,6 +26,8 @@
 #define QMENU_INDICATOR_NONEEXCLUSIVE "QMenu::indicator:non-exclusive"
 #define QMENU_RIGHTARROW "QMenu::right-arrow"
 #define QTABBAR_TAB "QTabBar::tab"
+#define QTABBAR_FIRST "QTabBar:first"
+#define QTABBAR_LAST "QTabBar:last"
 
 
 using namespace Com;
@@ -495,12 +497,28 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget 
     auto dTabBar = dynamic_cast<QTabBar *>(mContent);
     if (dTabBar) {
         mControlDetails[QTABBAR_TAB] = ControlDetail(q);
-//        mControlDetails[]
+        mControlDetails[QTABBAR_FIRST] = ControlDetail(q);
+        mControlDetails[QTABBAR_LAST] = ControlDetail(q);
+        // initial state
+        mControlDetails[QTABBAR_FIRST].states.insert("selected");
         QObject::connect(dTabBar, &QTabBar::currentChanged, [dTabBar, this](int index) {
-            if (dTabBar->tabText(index) == "") {
+            mControlDetails[QTABBAR_TAB].states.remove("selected");
+            mControlDetails[QTABBAR_FIRST].states.remove("selected");
+            mControlDetails[QTABBAR_LAST].states.remove("selected");
 
+            if (dTabBar->tabText(index) == QTABBAR_TAB) {
+                mControlDetails[QTABBAR_TAB].states.insert("selected");
             }
+            if (dTabBar->tabText(index) == QTABBAR_FIRST) {
+                mControlDetails[QTABBAR_FIRST].states.insert("selected");
+            }
+            if (dTabBar->tabText(index) == QTABBAR_LAST) {
+                mControlDetails[QTABBAR_LAST].states.insert("selected");
+            }
+            updateAllControlTitle();
         });
+
+
     }
 
     set_layout:
@@ -562,24 +580,27 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
         return;
     }
     auto &detail = mControlDetails[controlName];
-    if (event->type() == QEvent::Enter) {
-        detail.states.insert("hover");
-        if (controlName == "QCheckBox") {
-            mControlDetails[QCHECKBOX_INDICATOR].states.insert("hover");
+
+    if (controlName != "QTabBar") {
+        if (event->type() == QEvent::Enter) {
+            detail.states.insert("hover");
+            if (controlName == "QCheckBox") {
+                mControlDetails[QCHECKBOX_INDICATOR].states.insert("hover");
+            }
+            if (controlName == "QRadioButton") {
+                mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("hover");
+            }
+            changed = true;
+        } else if (event->type() == QEvent::Leave) {
+            detail.states.remove("hover");
+            if (controlName == "QCheckBox") {
+                mControlDetails[QCHECKBOX_INDICATOR].states.remove("hover");
+            }
+            if (controlName == "QRadioButton") {
+                mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("hover");
+            }
+            changed = true;
         }
-        if (controlName == "QRadioButton") {
-            mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("hover");
-        }
-        changed = true;
-    } else if (event->type() == QEvent::Leave) {
-        detail.states.remove("hover");
-        if (controlName == "QCheckBox") {
-            mControlDetails[QCHECKBOX_INDICATOR].states.remove("hover");
-        }
-        if (controlName == "QRadioButton") {
-            mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("hover");
-        }
-        changed = true;
     }
     if (dynamic_cast<QWidget *>(watched)) {
         if (event->type() == QEvent::FocusIn) {
@@ -625,6 +646,25 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
         else if (event->type() == QEvent::MouseButtonRelease) {
             mControlDetails[QCOMBOBOX_DROPDOWN].states.remove("pressed");
             mControlDetails[QCOMBOBOX_DOWNARROW].states.remove("pressed");
+            changed = true;
+        }
+    }
+    if (dynamic_cast<QTabBar *>(watched)) {
+        auto tabBar = dynamic_cast<QTabBar *>(watched);
+        auto hoverEvent = dynamic_cast<QHoverEvent *>(event);
+        if (hoverEvent) {
+            mControlDetails[QTABBAR_TAB].states.remove("hover");
+            mControlDetails[QTABBAR_FIRST].states.remove("hover");
+            mControlDetails[QTABBAR_LAST].states.remove("hover");
+            if (tabBar->tabRect(0).contains(hoverEvent->pos())) {
+                mControlDetails[QTABBAR_FIRST].states.insert("hover");
+            }
+            if (tabBar->tabRect(1).contains(hoverEvent->pos())) {
+                mControlDetails[QTABBAR_TAB].states.insert("hover");
+            }
+            if (tabBar->tabRect(tabBar->count() - 1).contains(hoverEvent->pos())) {
+                mControlDetails[QTABBAR_LAST].states.insert("hover");
+            }
             changed = true;
         }
     }
