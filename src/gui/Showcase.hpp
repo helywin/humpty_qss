@@ -19,8 +19,10 @@ class Showcase : public QWidget
 {
 Q_OBJECT
 public:
-    explicit Showcase(QWidget *content, QWidget *parent = nullptr,
-                      ShowcaseWidgetPosition pos = slp_north, QWidget *trigger = nullptr);
+    explicit Showcase(QWidget *content, QWidget *parent,
+                      ShowcaseWidgetPosition pos = slp_north);
+    explicit Showcase(QWidget *content, QWidget *container, QWidget *parent,
+                      ShowcaseWidgetPosition pos = slp_north);
     ~Showcase() override;
 
 private:

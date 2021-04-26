@@ -505,7 +505,7 @@ void WindowPrivate::addQMenuPage()
         e->exec(QCursor::pos());
     });
     gNoParentWidgets.append(e);
-    helper.addWidget(new Showcase(e, page, slp_south, button));
+    helper.addWidget(new Showcase(e, button, page, slp_south));
 }
 
 void WindowPrivate::addQTabBarPage()
@@ -516,17 +516,38 @@ void WindowPrivate::addQTabBarPage()
     using Type = QTabBar;
 
     auto e = new Type;
-    e->setMinimumWidth(500);
-    QWidget *w;
     e->addTab("QTabBar:first");
     e->addTab("QTabBar::tab");
+    e->addTab("QTabBar::close-button");
     e->addTab("disabled");
     e->addTab(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
               "icon");
     e->addTab("QTabBar:last");
     e->setTabsClosable(true);
-    e->setTabEnabled(2, false);
+    e->setTabButton(0, QTabBar::RightSide, nullptr);
+    e->setTabButton(1, QTabBar::RightSide, nullptr);
+    e->setTabButton(2, QTabBar::RightSide, nullptr);
+    e->setTabButton(3, QTabBar::RightSide, nullptr);
+    e->setTabButton(4, QTabBar::RightSide, nullptr);
+    e->setTabButton(5, QTabBar::RightSide, nullptr);
+    e->setTabEnabled(3, false);
     helper.addWidget(new Showcase(e, page));
+
+//    auto container = new QWidget;
+//    auto hbox = new QHBoxLayout(container);
+//    auto button = new QPushButton("add", container);
+//    e = new Type;
+//    e->setMinimumWidth(500);
+//    e->addTab("QTabBar:first");
+//    e->addTab("QTabBar::tab1");
+//    e->addTab("disabled");
+//    e->addTab(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
+//              "icon");
+//    e->addTab("QTabBar:last");
+//    e->setTabsClosable(true);
+//    e->setTabEnabled(2, false);
+//    helper.addWidget(new Showcase(e, page));
+
 }
 
 void WindowPrivate::addQTabWidgetPage()

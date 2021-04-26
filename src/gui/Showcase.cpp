@@ -15,6 +15,8 @@
 #include <QtWidgets>
 #include "Utils.hpp"
 #include "GuiCom.hpp"
+#include "GlobalMouseListener.hpp"
+#include "Functions.hpp"
 
 #define QCHECKBOX_INDICATOR "QCheckBox::indicator"
 #define QRADIOBUTTON_INDICATOR "QRadioButton::indicator"
@@ -28,180 +30,10 @@
 #define QTABBAR_TAB "QTabBar::tab"
 #define QTABBAR_FIRST "QTabBar:first"
 #define QTABBAR_LAST "QTabBar:last"
+#define QTABBAR_CLOSEBUTTON "QTabBar:close-button"
 
 
 using namespace Com;
-
-class GlobalMouseListener : public QObject
-{
-Q_OBJECT
-public :
-    explicit GlobalMouseListener(QObject *parent = nullptr) :
-            QObject(parent)
-    {}
-
-signals:
-    void mouseEvent(QEvent::Type type, Qt::MouseButton button);
-};
-
-GlobalMouseListener *gMouseListener = nullptr;
-
-HHOOK hHook = nullptr;
-
-LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-    QEvent::Type type;
-    Qt::MouseButton button;
-    bool emitSignal = true;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    const auto midButton = Qt::MiddleButton;
-#else
-    const auto midButton = Qt::MidButton;
-#endif
-    switch (wParam) {
-        case WM_LBUTTONDOWN:
-            type = QEvent::MouseButtonPress;
-            button = Qt::LeftButton;
-            break;
-        case WM_LBUTTONUP:
-            type = QEvent::MouseButtonRelease;
-            button = Qt::LeftButton;
-            break;
-        case WM_LBUTTONDBLCLK:
-            type = QEvent::MouseButtonDblClick;
-            button = Qt::LeftButton;
-            break;
-        case WM_RBUTTONDOWN:
-            type = QEvent::MouseButtonPress;
-            button = Qt::RightButton;
-            break;
-        case WM_RBUTTONUP:
-            type = QEvent::MouseButtonRelease;
-            button = Qt::RightButton;
-            break;
-        case WM_RBUTTONDBLCLK:
-            type = QEvent::MouseButtonPress;
-            button = Qt::RightButton;
-            break;
-        case WM_MBUTTONDOWN:
-            type = QEvent::MouseButtonPress;
-            button = midButton;
-            break;
-        case WM_MBUTTONUP:
-            type = QEvent::MouseButtonRelease;
-            button = midButton;
-            break;
-        case WM_MBUTTONDBLCLK:
-            type = QEvent::MouseButtonDblClick;
-            button = midButton;
-            break;
-        default:
-            emitSignal = false;
-            break;
-    }
-    if (emitSignal) {
-        //qDebug() << "global mouse event " << type << " " << button;
-        QTimer::singleShot(0, [=] {
-            gMouseListener->mouseEvent(type, button);
-        });
-    }
-    return CallNextHookEx(hHook, nCode, wParam, lParam);
-}
-
-void regWindowHook()
-{
-    hHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, nullptr, 0);
-    if (hHook == nullptr) {
-        qDebug() << "Hook failed";
-    } else {
-        qDebug() << "Hook succeeded";
-        gMouseListener = new GlobalMouseListener;
-    }
-}
-
-void printChildrenWidgetInfo(QWidget *w)
-{
-    bool hasChildWidget = false;
-    QString text = w->metaObject()->className() + QString(":\n");
-    for (auto child : w->children()) {
-        if (child->inherits("QWidget")) {
-            text += child->metaObject()->className() + QString(" ");
-            if (!child->dynamicPropertyNames().isEmpty()) {
-                text += QString("properties: ") +
-                        child->dynamicPropertyNames().join("  ");
-            }
-            hasChildWidget = true;
-        }
-    }
-    if (hasChildWidget) {
-        std::cout << text.toStdString() << std::endl;
-    }
-}
-
-QString widgetSubtree(const QWidget *w, int currentLevel = 0,
-                      const char *sep = "\n", const char *space = " ")
-{
-    QString text;
-    if (currentLevel != 0) {
-        text += sep;
-    }
-    QString indent = QString(space).repeated(currentLevel * 4);
-    text += indent + w->metaObject()->className();
-    if (!w->objectName().isEmpty()) {
-        text += QString(":") + space + w->objectName();
-    }
-    for (const auto child : w->children()) {
-        if (!child->inherits("QWidget")) {
-            continue;
-        }
-        text += widgetSubtree((QWidget *) child, currentLevel + 1, sep, space);
-    }
-    return text;
-}
-
-QString objectSubtree(const QObject *w, int currentLevel = 0,
-                      const char *sep = "\n", const char *space = " ")
-{
-    QString text;
-    if (currentLevel != 0) {
-        text += sep;
-    }
-    QString indent = QString(space).repeated(currentLevel * 4);
-    text += indent + w->metaObject()->className();
-    if (!w->objectName().isEmpty()) {
-        text += QString(": ") + w->objectName();
-    }
-    for (const auto child : w->children()) {
-        if (!child->inherits("QObject")) {
-            continue;
-        }
-        text += objectSubtree(child, currentLevel + 1, sep, space);
-    }
-    return text;
-}
-
-QList<QObject *> getChildrenByClassNames(const QObject *parent, QStringList names)
-{
-    QList<QObject *> list;
-    if (parent->children().isEmpty() || names.isEmpty()) {
-        return {};
-    }
-    if (names.size() == 1) {
-        for (const auto child : parent->children()) {
-            if (child->metaObject()->className() == names.first()) {
-                list.append(child);
-            }
-        }
-    } else {
-        for (const auto child : parent->children()) {
-            if (child->metaObject()->className() == names.first()) {
-                names.pop_front();
-                list.append(getChildrenByClassNames(child, names));
-            }
-        }
-    }
-    return list;
-}
 
 struct ControlDetail
 {
@@ -241,26 +73,23 @@ public:
     EventListener *mEventListener;
 
     explicit ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPosition pos,
-                             QWidget *trigger);
+                             QWidget *container);
     void updateTitle(const QString &name);
     void updateAllControlTitle();
     void updateMainControlTitle();
-    void setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget *trigger);
+    void setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget *container);
     ControlDetail &mainControlDetail();
     void onEventOccurred(QObject *watched, QEvent *event);
 };
 
 ShowcasePrivate::ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPosition pos,
-                                 QWidget *trigger) :
+                                 QWidget *container) :
         q_ptr(p)
 {
     Q_Q(Showcase);
-    if (!hHook) {
-        regWindowHook();
-    }
     initWidget(mLayout, q);
     initWidget(mEventListener, q);
-    setWidget(content, pos, trigger);
+    setWidget(content, pos, container);
 }
 
 void ShowcasePrivate::updateTitle(const QString &name)
@@ -294,7 +123,7 @@ ControlDetail &ShowcasePrivate::mainControlDetail()
     return mControlDetails[mControlName];
 }
 
-void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget *trigger)
+void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget *container)
 {
     Q_Q(Showcase);
     if (mContent) {
@@ -396,7 +225,7 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget 
 //        if (!childList.isEmpty()) {
         dComboBox->view()->installEventFilter(mEventListener);
         // listen to system event through win api
-        QObject::connect(gMouseListener, &GlobalMouseListener::mouseEvent,
+        QObject::connect(GlobalMouseListener::instance(), &GlobalMouseListener::mouseEvent,
                          [this](QEvent::Type type, Qt::MouseButton button) {
                              //qDebug() << "get response";
                              if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
@@ -499,8 +328,14 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget 
         mControlDetails[QTABBAR_TAB] = ControlDetail(q);
         mControlDetails[QTABBAR_FIRST] = ControlDetail(q);
         mControlDetails[QTABBAR_LAST] = ControlDetail(q);
+        mControlDetails[QTABBAR_CLOSEBUTTON] = ControlDetail(q);
         // initial state
         mControlDetails[QTABBAR_FIRST].states.insert("selected");
+
+//        auto closeButton = dTabBar->tabButton(2, QTabBar::RightSide);
+//        closeButton->setProperty("controlName", QTABBAR_CLOSEBUTTON);
+//        closeButton->installEventFilter(mEventListener);
+
         QObject::connect(dTabBar, &QTabBar::currentChanged, [dTabBar, this](int index) {
             mControlDetails[QTABBAR_TAB].states.remove("selected");
             mControlDetails[QTABBAR_FIRST].states.remove("selected");
@@ -526,9 +361,9 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget 
         mLayout->addWidget(v.display, 0, Qt::AlignCenter);
     }
     QWidget *added = mContent;
-    if (trigger) {
-        added = trigger;
-        trigger->setParent(q);
+    if (container) {
+        added = container;
+        container->setParent(q);
     } else {
         mContent->setParent(q);
     }
@@ -547,6 +382,8 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
         return;
     }
     bool changed = false;
+    auto wt = widgetType(mControlName);
+
     if (dynamic_cast<QMenu *>(watched) && (event->type() == QEvent::Close ||
                                            event->type() == QEvent::Hide)) {
         mControlDetails[QMENU_ITEM].states.remove("selected");
@@ -602,7 +439,7 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
             changed = true;
         }
     }
-    if (dynamic_cast<QWidget *>(watched)) {
+
         if (event->type() == QEvent::FocusIn) {
             detail.states.insert("focus");
             if (controlName == "QCheckBox") {
@@ -622,7 +459,7 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
             }
             changed = true;
         }
-    }
+
     if (dynamic_cast<QComboBox *>(watched)) {
         auto comboBox = dynamic_cast<QComboBox *>(watched);
         if (event->type() == QEvent::MouseButtonPress &&
@@ -674,10 +511,20 @@ void ShowcasePrivate::onEventOccurred(QObject *watched, QEvent *event)
 
 }
 
-Showcase::Showcase(QWidget *content, QWidget *parent, ShowcaseWidgetPosition pos,
-                   QWidget *trigger) :
+Showcase::Showcase(QWidget *content, QWidget *parent, ShowcaseWidgetPosition pos) :
         QWidget(parent),
-        d_ptr(new ShowcasePrivate(this, content, pos, trigger))
+        d_ptr(new ShowcasePrivate(this, content, pos, nullptr))
+{
+    Q_D(Showcase);
+    connect(d->mEventListener, &EventListener::eventOccurred,
+            [this](QObject *watched, QEvent *event) {
+                d_ptr->onEventOccurred(watched, event);
+            });
+}
+
+Showcase::Showcase(QWidget *content, QWidget *container, QWidget *parent,
+                   ShowcaseWidgetPosition pos) :
+        d_ptr(new ShowcasePrivate(this, content, pos, container))
 {
     Q_D(Showcase);
     connect(d->mEventListener, &EventListener::eventOccurred,
