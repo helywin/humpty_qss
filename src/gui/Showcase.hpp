@@ -31,16 +31,4 @@ private:
     QScopedPointer<ShowcasePrivate> d_ptr;
 };
 
-class EventListener : public QObject
-{
-Q_OBJECT
-public:
-    explicit EventListener(QObject *parent = nullptr);
-    bool eventFilter(QObject *watched, QEvent *event) override;
-
-signals:
-    void eventOccurred(QObject *watched, QEvent *event);
-};
-
-
 #endif //HUMPTY_QSS_SHOWCASE_HPP

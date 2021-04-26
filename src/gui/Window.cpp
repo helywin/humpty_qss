@@ -526,7 +526,7 @@ void WindowPrivate::addQTabBarPage()
     e->setTabsClosable(true);
     e->setTabButton(0, QTabBar::RightSide, nullptr);
     e->setTabButton(1, QTabBar::RightSide, nullptr);
-    e->setTabButton(2, QTabBar::RightSide, nullptr);
+//    e->setTabButton(2, QTabBar::RightSide, nullptr);
     e->setTabButton(3, QTabBar::RightSide, nullptr);
     e->setTabButton(4, QTabBar::RightSide, nullptr);
     e->setTabButton(5, QTabBar::RightSide, nullptr);

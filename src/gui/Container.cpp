@@ -63,6 +63,25 @@ void Container::onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button)
 
 }
 
+void Container::setListenWidget(QWidget *w)
+{
+    w->installEventFilter(this);
+}
+
+bool Container::eventFilter(QObject *watched, QEvent *event)
+{
+    auto w = dynamic_cast<QWidget *>(watched);
+    if (w) {
+        onListenedWidgetEventOccurred(w, event);
+    }
+    return QObject::eventFilter(watched, event);
+}
+
+QStandardItemModel *Container::objectTree()
+{
+    return nullptr;
+}
+
 /*EventListener::EventListener(QObject *parent) : QObject(parent)
 {
 

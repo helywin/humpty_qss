@@ -9,6 +9,7 @@
 #include <QFrame>
 #include <QEvent>
 
+class QStandardItemModel;
 class ContainerPrivate;
 
 class Container : public QFrame
@@ -18,10 +19,14 @@ public:
     explicit Container(QWidget *parent = nullptr);
     ~Container() override;
     void setListenGlobalMouseEvent(bool enable);
+    QStandardItemModel *objectTree();
+    bool eventFilter(QObject *watched, QEvent *event) final;
 
 protected:
     virtual void onListenedWidgetEventOccurred(QWidget *watched, QEvent *event);
     virtual void onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button);
+    void setListenWidget(QWidget *w);
+
 
 private:
     Q_DECLARE_PRIVATE(Container)
