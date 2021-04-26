@@ -61,9 +61,34 @@ void QssEditor::keyPressEvent(QKeyEvent *e)
         moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
         return;
     }
-    if (d->mConfig.tabReplace() && (e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Tab)) {
-
+    qDebug() << e->modifiers() << "  0x" << QString::number(e->key(), 16);
+    if (d->mConfig.autoParentheses() && ((e->modifiers() == Qt::ShiftModifier &&
+                                          e->key() == Qt::Key_ParenLeft) ||
+                                         e->key() == Qt::Key_BraceLeft)) {
+        insertPlainText("{}");
+        moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
+        return;
     }
+    if (d->mConfig.tabReplace() &&
+        (e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Tab)) {
+        auto spaceWidth = d->mConfig.tabReplaceSize() -
+                          textCursor().positionInBlock() % d->mConfig.tabReplaceSize();
+        insertPlainText(QString(" ").repeated(spaceWidth));
+        return;
+    }
+    if (d->mConfig.tabReplace() &&
+        (e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Backspace)) {
+        auto spaceWidth = textCursor().positionInBlock() % d->mConfig.tabReplaceSize();
+        spaceWidth += !spaceWidth * d->mConfig.tabReplaceSize();
+        if (matchString(-spaceWidth, 1, QString(" ").repeated(spaceWidth))) {
+            auto cusor = textCursor();
+            cusor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, spaceWidth);
+            cusor.removeSelectedText();
+            setTextCursor(cusor);
+            return;
+        }
+    }
+
     QTextEdit::keyPressEvent(e);
 }
 

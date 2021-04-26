@@ -141,13 +141,12 @@ WindowPrivate::WindowPrivate(Window *p) :
     initWidget(mUpdate, q);
     q->setMinimumSize(1000, 600);
 
-    mStackedWidget->setMinimumWidth(600);
+    mStackedWidget->setMinimumWidth(500);
     auto vbox = new QVBoxLayout;
     for (int i = 0; i < wt_widgetCount; ++i) {
         mIndexButtons[i]->setText(widgetName((WidgetType) i));
         mIndexButtons[i]->setCheckable(true);
-        mIndexButtons[i]->setSizePolicy(QSizePolicy::MinimumExpanding,
-                                        QSizePolicy::Preferred);
+        mIndexButtons[i]->setFixedWidth(150);
         vbox->addWidget(mIndexButtons[i], 0);
         mIndexButtonGroup->addButton(mIndexButtons[i], i);
         mStackedWidget->addWidget(mPages[i]);
@@ -174,7 +173,8 @@ WindowPrivate::WindowPrivate(Window *p) :
     QssEditorConfig config;
     config.setTabReplace(true);
     config.setAutoIndentation(true);
-    mEditor->setMinimumWidth(320);
+    config.setAutoParentheses(true);
+//    mEditor->setMinimumWidth(320);
     mEditor->setEditorConfig(config);
     mEditor->setFontFamily("consolas");
     mEditor->setText("QWidget {\n    background:#eeeeee;\n}\n\n"
@@ -182,13 +182,18 @@ WindowPrivate::WindowPrivate(Window *p) :
                      ".QLabel {\n"
                      "    qproperty-indent: 10;\n"
                      "}");
-
+    mEditPage->setSizePolicy(QSizePolicy::Expanding,
+                               QSizePolicy::Preferred);
     vbox = new QVBoxLayout(mEditPage);
     vbox->addWidget(mEditor);
     vbox->addWidget(mUpdate);
     mLayout->addWidget(mSplitter);
     mSplitter->addWidget(mWidgetPage);
     mSplitter->addWidget(mEditPage);
+    mSplitter->setStretchFactor(0, 1);
+    mSplitter->setStretchFactor(1, 2);
+    mSplitter->setCollapsible(0, false);
+    mSplitter->setCollapsible(1, false);
 }
 
 QWidget *WindowPrivate::initPage(WidgetType type, QGridLayout *&grid)
