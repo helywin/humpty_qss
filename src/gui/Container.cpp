@@ -4,32 +4,24 @@
 
 #include "Container.hpp"
 
-/*
-class EventListener : public QObject
-{
-Q_OBJECT
-public:
-    explicit EventListener(QObject *parent = nullptr);
-    bool eventFilter(QObject *watched, QEvent *event) override;
+#include "StateDisplay.hpp"
+#include "Utils.hpp"
+#include "GlobalMouseListener.hpp"
+#include "Container_p.hpp"
 
-signals:
-    void eventOccurred(QObject *watched, QEvent *event);
-};
-*/
-
-class ContainerPrivate
-{
-public:
-    Q_DECLARE_PUBLIC(Container)
-    Container *q_ptr;
-
-    explicit ContainerPrivate(Container *p);
-};
+using namespace Com;
 
 ContainerPrivate::ContainerPrivate(Container *p) :
         q_ptr(p)
 {
-
+    Q_Q(Container);
+    initWidget(mLayout, q);
+    initWidget(mTitle, q);
+    initWidget(mStatesContainer, q);
+    initWidget(mStatesLayout, mStatesContainer);
+    mStatesLayout = new QFormLayout;
+    mLayout->addWidget(mTitle);
+    mLayout->addWidget(mStatesContainer);
 }
 
 Container::Container(QWidget *parent) :
@@ -37,11 +29,15 @@ Container::Container(QWidget *parent) :
         d_ptr(new ContainerPrivate(this))
 {
     Q_D(Container);
-//    connect(d->mEventListener, &EventListener::eventOccurred,
-//            [this](QObject *watched, QEvent *event) {
-//                onEventOccurred(watched, event);
-//            });
 }
+
+Container::Container(ContainerPrivate &d, QWidget *parent) :
+        QFrame(parent),
+        d_ptr(&d)
+{
+
+}
+
 
 Container::~Container()
 {
@@ -55,7 +51,17 @@ void Container::onListenedWidgetEventOccurred(QWidget *watched, QEvent *event)
 
 void Container::setListenGlobalMouseEvent(bool enable)
 {
-
+    Q_D(Container);
+    if (enable == d->mListenGlobalMouseEvent) {
+        return;
+    } else if (enable) {
+        connect(GlobalMouseListener::instance(), &GlobalMouseListener::mouseEvent,
+                this, &Container::onGlobalMouseEvent);
+    } else {
+        disconnect(GlobalMouseListener::instance(), &GlobalMouseListener::mouseEvent,
+                   this, &Container::onGlobalMouseEvent);
+    }
+    d->mListenGlobalMouseEvent = enable;
 }
 
 void Container::onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button)
@@ -65,6 +71,8 @@ void Container::onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button)
 
 void Container::setListenWidget(QWidget *w)
 {
+    Q_D(Container);
+    d->mListenWidget = w;
     w->installEventFilter(this);
 }
 
@@ -79,7 +87,33 @@ bool Container::eventFilter(QObject *watched, QEvent *event)
 
 QStandardItemModel *Container::objectTree()
 {
+    Q_D(Container);
+    if (!d->mListenWidget) {
+        return nullptr;
+    }
     return nullptr;
+}
+
+void Container::setWidget(QWidget *w, WidgetPosition wp)
+{
+    Q_D(Container);
+    d->mLayout->insertWidget(wp, w);
+}
+
+void Container::addControlStateDisplay(const QString &name, ControlStates states)
+{
+    Q_D(Container);
+    assert(!d->mStateDisplayList.contains(name));
+    auto display = new StateDisplay(d->mStatesContainer);
+    d->mStateDisplayList[name] = display;
+    display->setAllStates(states);
+}
+
+StateDisplay *Container::stateDisplay(const QString &name)
+{
+    Q_D(Container);
+    assert(!d->mStateDisplayList.contains(name));
+    return d->mStateDisplayList[name];
 }
 
 /*EventListener::EventListener(QObject *parent) : QObject(parent)
@@ -92,5 +126,3 @@ bool EventListener::eventFilter(QObject *watched, QEvent *event)
     emit eventOccurred(watched, event);
     return false;
 }*/
-
-#include "Container.moc"
