@@ -26,6 +26,10 @@ public:
     QWidget *mListenWidget = nullptr;
 
     explicit ContainerPrivate(Container *p);
+    void setListenWidget(QWidget *w);
+    void addControlStateDisplay(const QString &name, ControlStates states);
+    StateDisplay *stateDisplay(const QString &name);
+    StateDisplay *mainStateDisplay();
 };
 
 #endif //HUMPTY_QSS_CONTAINER_P_HPP

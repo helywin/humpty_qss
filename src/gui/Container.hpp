@@ -29,15 +29,14 @@ public:
     void setListenGlobalMouseEvent(bool enable);
     QStandardItemModel *objectTree();
     bool eventFilter(QObject *watched, QEvent *event) final;
+    virtual void setListenWidget(QWidget *w);
+    void setWidget(QWidget *w, WidgetPosition wp = wp_north);
+    QWidget *listened();
 
 protected:
     explicit Container(ContainerPrivate &d, QWidget *parent = nullptr);
     virtual void onListenedWidgetEventOccurred(QWidget *watched, QEvent *event);
     virtual void onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button);
-    void setListenWidget(QWidget *w);
-    void setWidget(QWidget *w, WidgetPosition wp = wp_north);
-    void addControlStateDisplay(const QString &name, ControlStates states);
-    StateDisplay *stateDisplay(const QString &name);
 
 
 private:

@@ -24,6 +24,33 @@ ContainerPrivate::ContainerPrivate(Container *p) :
     mLayout->addWidget(mStatesContainer);
 }
 
+void ContainerPrivate::addControlStateDisplay(const QString &name, ControlStates states)
+{
+    assert(!mStateDisplayList.contains(name));
+    auto display = new StateDisplay(mStatesContainer);
+    mStateDisplayList[name] = display;
+    display->setAllStates(states);
+}
+
+StateDisplay *ContainerPrivate::stateDisplay(const QString &name)
+{
+    assert(!mStateDisplayList.contains(name));
+    return mStateDisplayList[name];
+}
+
+StateDisplay *ContainerPrivate::mainStateDisplay()
+{
+    assert(!mStateDisplayList.contains(mListenWidget->metaObject()->className()));
+    return mStateDisplayList[mListenWidget->metaObject()->className()];;
+}
+
+void ContainerPrivate::setListenWidget(QWidget *w)
+{
+    Q_Q(Container);
+    mListenWidget = w;
+    w->installEventFilter(q);
+}
+
 Container::Container(QWidget *parent) :
         QFrame(parent),
         d_ptr(new ContainerPrivate(this))
@@ -76,6 +103,12 @@ void Container::setListenWidget(QWidget *w)
     w->installEventFilter(this);
 }
 
+void Container::setWidget(QWidget *w, WidgetPosition wp)
+{
+    Q_D(Container);
+    d->mLayout->insertWidget(wp, w);
+}
+
 bool Container::eventFilter(QObject *watched, QEvent *event)
 {
     auto w = dynamic_cast<QWidget *>(watched);
@@ -94,26 +127,10 @@ QStandardItemModel *Container::objectTree()
     return nullptr;
 }
 
-void Container::setWidget(QWidget *w, WidgetPosition wp)
+QWidget *Container::listened()
 {
     Q_D(Container);
-    d->mLayout->insertWidget(wp, w);
-}
-
-void Container::addControlStateDisplay(const QString &name, ControlStates states)
-{
-    Q_D(Container);
-    assert(!d->mStateDisplayList.contains(name));
-    auto display = new StateDisplay(d->mStatesContainer);
-    d->mStateDisplayList[name] = display;
-    display->setAllStates(states);
-}
-
-StateDisplay *Container::stateDisplay(const QString &name)
-{
-    Q_D(Container);
-    assert(!d->mStateDisplayList.contains(name));
-    return d->mStateDisplayList[name];
+    return d->mListenWidget;
 }
 
 /*EventListener::EventListener(QObject *parent) : QObject(parent)

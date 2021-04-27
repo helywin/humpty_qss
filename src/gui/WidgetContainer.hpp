@@ -16,7 +16,9 @@ Q_OBJECT
 public:
     explicit WidgetContainer(QWidget *parent = nullptr);
     ~WidgetContainer() override;
-
+    void setListenWidget(QWidget *w) override;
+protected:
+    void onListenedWidgetEventOccurred(QWidget *watched, QEvent *event) override;
 private:
     Q_DECLARE_PRIVATE(WidgetContainer)
     Q_DISABLE_COPY(WidgetContainer)
