@@ -7,9 +7,11 @@
 #include <QDataStream>
 #include <QDateTime>
 #include <QDebug>
+
 #ifdef QT_NO_SYSTEMTRAYICON
 #include <QProcess>
 #endif
+
 #include <QDir>
 #include <QMutex>
 #include <QThread>
@@ -57,14 +59,30 @@ QString cpuType()
     return cpuStr;
 }
 
+#elif __linux
+
+/*!
+ * @brief 获取处理器信息
+ * @return 处理器信息
+ */
+QString cpuType()
+{
+    auto *cpu = new QSettings(
+            R"(HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0)",
+            QSettings::NativeFormat);
+    auto cpuStr = cpu->value("ProcessorNameString").toString();
+    delete cpu;
+    return cpuStr;
+}
+
 #endif
 
 void updateLogFileName()
 {
     if (gSaveWithDate) {
         logFile = appLogPath + QString("%1-%2.log")
-                .arg(gAppName)
-                .arg(QDate::currentDate().toString("yyyy_MM_dd"));
+                .arg(gAppName,
+                     QDate::currentDate().toString("yyyy_MM_dd"));
     } else {
         logFile = appLogPath + QString("%1.log").arg(gAppName);
     }
@@ -126,7 +144,7 @@ void Logger::sendLog(LogLevel level, const QString &func,
         QFile log(logFile);
         if (log.open(QIODevice::Text | QIODevice::WriteOnly | QIODevice::Append)) {
             QTextStream stream(&log);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             stream.setEncoding(QStringConverter::Utf8);
 #else
             stream.setCodec("utf-8");
@@ -187,7 +205,7 @@ void Logger::startRecord(bool writeFile)
         }
         if (log.open(QIODevice::Text | QIODevice::WriteOnly | QIODevice::Append)) {
             QTextStream stream(&log);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             stream.setEncoding(QStringConverter::Utf8);
 #else
             stream.setCodec("utf-8");
@@ -204,8 +222,10 @@ void Logger::startRecord(bool writeFile)
         SEND_LOG_INFO(
                 QString("PID:0x%1").arg(QCoreApplication::applicationPid(), 8, 16, QChar('0')));
         SEND_LOG_INFO("DIR:" + QDir::currentPath());
+#ifdef __linux
+        SEND_LOG_INFO(QString("ENV:PATH:") + getenv("path"));
+#elif _WINDOWS
         SEND_LOG_INFO("ENV:PATH:" + qEnvironmentVariable("path"));
-#ifdef _WINDOWS
         SEND_LOG_INFO("Code Page:" + QString::number(GetACP()));
 #endif
         log.close();

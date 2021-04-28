@@ -3,6 +3,7 @@
 //
 
 #include "GuiCom.hpp"
+#include <cassert>
 
 const char *cWidgetNames[] = {
         "QWidget",

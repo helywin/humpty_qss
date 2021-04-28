@@ -9,6 +9,7 @@
 #include <QFlags>
 #include <QEvent>
 #include <QStringList>
+#include <QMetaEnum>
 #include "Utils_Export.hpp"
 
 class QWidget;

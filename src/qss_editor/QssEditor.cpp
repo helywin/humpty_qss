@@ -7,6 +7,7 @@
 #include <QTextBlock>
 #include <QDebug>
 #include <QMimeData>
+#include <cassert>
 
 namespace Com
 {

@@ -5,6 +5,7 @@
 #include "Window.hpp"
 #include <QtWidgets>
 #include <QSizePolicy>
+#include <cassert>
 
 #include "QssEditor.hpp"
 #include "Utils.hpp"

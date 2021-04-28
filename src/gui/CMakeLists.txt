@@ -1,11 +1,13 @@
 set_submodule_executable(HumptyQss Gui)
 set(MODULE_LIBS
-        Com.CrashHandler
         Com.Logger
         Com.Utils
         Com.Translatable
         Com.QssEditor
         )
+if (WIN32)
+    list(APPEND MODULE_LIBS Com.CrashHandler)
+endif ()
 target_link_libraries(${CURRENT_MODULE_TARGET}
         Qt5::Core
         Qt5::Gui

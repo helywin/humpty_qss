@@ -26,7 +26,10 @@ public:
 public:
     explicit Container(QWidget *parent = nullptr);
     ~Container() override;
+
+#ifdef _WINDOWS
     void setListenGlobalMouseEvent(bool enable);
+#endif
     QStandardItemModel *objectTree();
     bool eventFilter(QObject *watched, QEvent *event) final;
 
