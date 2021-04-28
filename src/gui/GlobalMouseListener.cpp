@@ -3,10 +3,11 @@
 //
 
 #include "GlobalMouseListener.hpp"
-#include <windows.h>
 #include <QDebug>
 #include <QTimer>
 
+#ifdef _WINDOWS
+#include <windows.h>
 GlobalMouseListener *gInstance = nullptr;
 HHOOK gHook = nullptr;
 
@@ -83,3 +84,6 @@ GlobalMouseListener *GlobalMouseListener::instance()
     }
     return gInstance;
 }
+#elif __linux
+// https://www.jianshu.com/p/927fc573d081
+#endif

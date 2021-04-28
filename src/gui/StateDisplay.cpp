@@ -8,6 +8,8 @@
 #include <QVariant>
 #include <QBoxLayout>
 #include <QStyle>
+#include <cassert>
+
 #include "Utils.hpp"
 
 using namespace Com;

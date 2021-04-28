@@ -11,8 +11,9 @@
 #include <QSet>
 #include <QDebug>
 #include <QTimer>
-#include <iostream>
 #include <QtWidgets>
+#include <iostream>
+#include <cassert>
 #include "Utils.hpp"
 #include "GuiCom.hpp"
 #include "GlobalMouseListener.hpp"
@@ -79,10 +80,10 @@ public:
     Q_DECLARE_PUBLIC(Showcase)
     Showcase *q_ptr;
     QVBoxLayout *mLayout;
-    QWidget *mContent;
+    QWidget *mContent = nullptr;
     QMap<QString, ControlDetail> mControlDetails;
     QString mControlName;
-    EventListener *mEventListener;
+    EventListener *mEventListener = nullptr;
 
     explicit ShowcasePrivate(Showcase *p, QWidget *content, ShowcaseWidgetPosition pos,
                              QWidget *container);
@@ -157,218 +158,216 @@ void ShowcasePrivate::setWidget(QWidget *w, ShowcaseWidgetPosition pos, QWidget 
 
     if (!mContent->isEnabled()) {
         mainControlDetail().states.insert("disabled");
-        goto set_layout;
     } else {
         mContent->installEventFilter(mEventListener);
-    }
-
-    auto dPushButton = dynamic_cast<QPushButton *>(mContent);
-    if (dPushButton) {
-        QObject::connect(dPushButton, &QPushButton::pressed, [this] {
-            mainControlDetail().states.insert("pressed");
-            updateMainControlTitle();
-        });
-        QObject::connect(dPushButton, &QPushButton::released, [this] {
-            mainControlDetail().states.remove("pressed");
-            updateMainControlTitle();
-        });
-
-        if (dPushButton->isCheckable()) {
-            if (dPushButton->isChecked()) {
-                mainControlDetail().states.insert("checked");
-            }
-            QObject::connect(dPushButton, &QPushButton::clicked, [this](bool checked) {
-                if (checked) {
-                    mainControlDetail().states.insert("checked");
-                } else {
-                    mainControlDetail().states.remove("checked");
-                }
+        auto dPushButton = dynamic_cast<QPushButton *>(mContent);
+        if (dPushButton) {
+            QObject::connect(dPushButton, &QPushButton::pressed, [this] {
+                mainControlDetail().states.insert("pressed");
                 updateMainControlTitle();
             });
-        }
-    }
-
-    auto dToolButton = dynamic_cast<QToolButton *>(mContent);
-    if (dToolButton) {
-        QObject::connect(dToolButton, &QToolButton::pressed, [this] {
-            mainControlDetail().states.insert("pressed");
-            updateMainControlTitle();
-        });
-        QObject::connect(dToolButton, &QToolButton::released, [this] {
-            mainControlDetail().states.remove("pressed");
-            updateMainControlTitle();
-        });
-
-        if (dToolButton->isCheckable()) {
-            if (dToolButton->isChecked()) {
-                mainControlDetail().states.insert("checked");
-            }
-            QObject::connect(dToolButton, &QToolButton::clicked, [this](bool checked) {
-                if (checked) {
-                    mainControlDetail().states.insert("checked");
-                } else {
-                    mainControlDetail().states.remove("checked");
-                }
+            QObject::connect(dPushButton, &QPushButton::released, [this] {
+                mainControlDetail().states.remove("pressed");
                 updateMainControlTitle();
             });
-        }
-    }
 
-    auto dLineEdit = dynamic_cast<QLineEdit *>(mContent);
-    if (dLineEdit) {
-        if (dLineEdit->isReadOnly()) {
-            mainControlDetail().type = "read-only";
+            if (dPushButton->isCheckable()) {
+                if (dPushButton->isChecked()) {
+                    mainControlDetail().states.insert("checked");
+                }
+                QObject::connect(dPushButton, &QPushButton::clicked, [this](bool checked) {
+                    if (checked) {
+                        mainControlDetail().states.insert("checked");
+                    } else {
+                        mainControlDetail().states.remove("checked");
+                    }
+                    updateMainControlTitle();
+                });
+            }
         }
-        if (dLineEdit->echoMode() == QLineEdit::Password) {
-            mainControlDetail().type = "echoMode=\"2\"";
-        }
-    }
 
-    auto dComboBox = dynamic_cast<QComboBox *>(mContent);
-    if (dComboBox) {
-        mControlDetails[QCOMBOBOX_DROPDOWN] = ControlDetail(q);
-        mControlDetails[QCOMBOBOX_DOWNARROW] = ControlDetail(q);
-        if (!dComboBox->isEditable()) {
-            mainControlDetail().type = "read-only";
+        auto dToolButton = dynamic_cast<QToolButton *>(mContent);
+        if (dToolButton) {
+            QObject::connect(dToolButton, &QToolButton::pressed, [this] {
+                mainControlDetail().states.insert("pressed");
+                updateMainControlTitle();
+            });
+            QObject::connect(dToolButton, &QToolButton::released, [this] {
+                mainControlDetail().states.remove("pressed");
+                updateMainControlTitle();
+            });
+
+            if (dToolButton->isCheckable()) {
+                if (dToolButton->isChecked()) {
+                    mainControlDetail().states.insert("checked");
+                }
+                QObject::connect(dToolButton, &QToolButton::clicked, [this](bool checked) {
+                    if (checked) {
+                        mainControlDetail().states.insert("checked");
+                    } else {
+                        mainControlDetail().states.remove("checked");
+                    }
+                    updateMainControlTitle();
+                });
+            }
         }
+
+        auto dLineEdit = dynamic_cast<QLineEdit *>(mContent);
+        if (dLineEdit) {
+            if (dLineEdit->isReadOnly()) {
+                mainControlDetail().type = "read-only";
+            }
+            if (dLineEdit->echoMode() == QLineEdit::Password) {
+                mainControlDetail().type = "echoMode=\"2\"";
+            }
+        }
+
+        auto dComboBox = dynamic_cast<QComboBox *>(mContent);
+        if (dComboBox) {
+            mControlDetails[QCOMBOBOX_DROPDOWN] = ControlDetail(q);
+            mControlDetails[QCOMBOBOX_DOWNARROW] = ControlDetail(q);
+            if (!dComboBox->isEditable()) {
+                mainControlDetail().type = "read-only";
+            }
 
 //        auto childList = getChildrenByClassNames(dComboBox, {"QComboBoxPrivateContainer",
 //                                                            "QComboBoxListView"});
 //        if (!childList.isEmpty()) {
-        dComboBox->view()->installEventFilter(mEventListener);
-        // listen to system event through win api
-        QObject::connect(GlobalMouseListener::instance(), &GlobalMouseListener::mouseEvent,
-                         [this](QEvent::Type type, Qt::MouseButton button) {
-                             //qDebug() << "get response";
-                             if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
-                                 mControlDetails[QCOMBOBOX_DROPDOWN].states.remove("pressed");
-                                 mControlDetails[QCOMBOBOX_DOWNARROW].states.remove("pressed");
-                             }
-                         });
+            dComboBox->view()->installEventFilter(mEventListener);
+#ifdef _WINDOWS
+            // listen to system event through win api
+            QObject::connect(GlobalMouseListener::instance(), &GlobalMouseListener::mouseEvent,
+                             [this](QEvent::Type type, Qt::MouseButton button) {
+                                 //qDebug() << "get response";
+                                 if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
+                                     mControlDetails[QCOMBOBOX_DROPDOWN].states.remove("pressed");
+                                     mControlDetails[QCOMBOBOX_DOWNARROW].states.remove("pressed");
+                                 }
+                             });
+#endif
 //        }
-    }
-    //indeterminate
-    auto dCheckBox = dynamic_cast<QCheckBox *>(mContent);
-    if (dCheckBox) {
-        mControlDetails[QCHECKBOX_INDICATOR] = ControlDetail(q);
-        QObject::connect(dCheckBox, &QCheckBox::stateChanged, [this](int state) {
-            mainControlDetail().states.remove("checked");
-            mainControlDetail().states.remove("indeterminate");
-            mControlDetails[QCHECKBOX_INDICATOR].states.remove("checked");
-            mControlDetails[QCHECKBOX_INDICATOR].states.remove("indeterminate");
-            if (state == Qt::Checked) {
-                mainControlDetail().states.insert("checked");
-                mControlDetails[QCHECKBOX_INDICATOR].states.insert("checked");
-            } else if (state == Qt::PartiallyChecked) {
-                mainControlDetail().states.insert("indeterminate");
-                mControlDetails[QCHECKBOX_INDICATOR].states.insert("indeterminate");
-            }
-            updateAllControlTitle();
-        });
-        QObject::connect(dCheckBox, &QCheckBox::pressed, [this] {
-            mainControlDetail().states.insert("pressed");
-            mControlDetails[QCHECKBOX_INDICATOR].states.insert("pressed");
-            updateAllControlTitle();
-        });
-        QObject::connect(dCheckBox, &QCheckBox::released, [this] {
-            mainControlDetail().states.remove("pressed");
-            mControlDetails[QCHECKBOX_INDICATOR].states.remove("pressed");
-            updateAllControlTitle();
-        });
-    }
-
-    auto dRadioButton = dynamic_cast<QRadioButton *>(mContent);
-    if (dRadioButton) {
-        mControlDetails[QRADIOBUTTON_INDICATOR] = ControlDetail(q);
-        QObject::connect(dRadioButton, &QRadioButton::clicked, [this](bool checked) {
-            if (checked) {
-                mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("checked");
-                mainControlDetail().states.insert("checked");
-            } else {
-                mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("checked");
+        }
+        //indeterminate
+        auto dCheckBox = dynamic_cast<QCheckBox *>(mContent);
+        if (dCheckBox) {
+            mControlDetails[QCHECKBOX_INDICATOR] = ControlDetail(q);
+            QObject::connect(dCheckBox, &QCheckBox::stateChanged, [this](int state) {
                 mainControlDetail().states.remove("checked");
-            }
-            updateAllControlTitle();
-        });
-        QObject::connect(dRadioButton, &QRadioButton::pressed, [this] {
-            mainControlDetail().states.insert("pressed");
-            mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("pressed");
-            updateAllControlTitle();
-        });
-        QObject::connect(dRadioButton, &QRadioButton::released, [this] {
-            mainControlDetail().states.remove("pressed");
-            mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("pressed");
-            updateAllControlTitle();
-        });
-    }
-
-    auto dMenu = dynamic_cast<QMenu *>(mContent);
-    if (dMenu) {
-        mControlDetails[QMENU_ITEM] = ControlDetail(q);
-        mControlDetails[QMENU_ICON] = ControlDetail(q);
-        mControlDetails[QMENU_INDICATOR_EXCLUSIVE] = ControlDetail(q);
-        mControlDetails[QMENU_INDICATOR_NONEEXCLUSIVE] = ControlDetail(q);
-        mControlDetails[QMENU_RIGHTARROW] = ControlDetail(q);
-
-        for (auto action : dMenu->actions()) {
-            QObject::connect(action, &QAction::hovered, [action, this] {
-                mControlDetails[QMENU_ITEM].states.remove("selected");
-                mControlDetails[QMENU_ICON].states.remove("selected");
-                mControlDetails[QMENU_INDICATOR_EXCLUSIVE].states.remove("selected");
-                mControlDetails[QMENU_INDICATOR_NONEEXCLUSIVE].states.remove("selected");
-                if (action->data().toBool()) {
-                    mControlDetails[action->text()].states.insert("selected");
+                mainControlDetail().states.remove("indeterminate");
+                mControlDetails[QCHECKBOX_INDICATOR].states.remove("checked");
+                mControlDetails[QCHECKBOX_INDICATOR].states.remove("indeterminate");
+                if (state == Qt::Checked) {
+                    mainControlDetail().states.insert("checked");
+                    mControlDetails[QCHECKBOX_INDICATOR].states.insert("checked");
+                } else if (state == Qt::PartiallyChecked) {
+                    mainControlDetail().states.insert("indeterminate");
+                    mControlDetails[QCHECKBOX_INDICATOR].states.insert("indeterminate");
                 }
                 updateAllControlTitle();
             });
-            // listen specified QAction check state
-            if (action->data().toBool()) {
-                QObject::connect(action, &QAction::triggered, [action, this](bool checked) {
-                    if (checked) {
-                        mControlDetails[action->text()].states.insert("checked");
-                    } else {
-                        mControlDetails[action->text()].states.remove("checked");
+            QObject::connect(dCheckBox, &QCheckBox::pressed, [this] {
+                mainControlDetail().states.insert("pressed");
+                mControlDetails[QCHECKBOX_INDICATOR].states.insert("pressed");
+                updateAllControlTitle();
+            });
+            QObject::connect(dCheckBox, &QCheckBox::released, [this] {
+                mainControlDetail().states.remove("pressed");
+                mControlDetails[QCHECKBOX_INDICATOR].states.remove("pressed");
+                updateAllControlTitle();
+            });
+        }
+
+        auto dRadioButton = dynamic_cast<QRadioButton *>(mContent);
+        if (dRadioButton) {
+            mControlDetails[QRADIOBUTTON_INDICATOR] = ControlDetail(q);
+            QObject::connect(dRadioButton, &QRadioButton::clicked, [this](bool checked) {
+                if (checked) {
+                    mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("checked");
+                    mainControlDetail().states.insert("checked");
+                } else {
+                    mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("checked");
+                    mainControlDetail().states.remove("checked");
+                }
+                updateAllControlTitle();
+            });
+            QObject::connect(dRadioButton, &QRadioButton::pressed, [this] {
+                mainControlDetail().states.insert("pressed");
+                mControlDetails[QRADIOBUTTON_INDICATOR].states.insert("pressed");
+                updateAllControlTitle();
+            });
+            QObject::connect(dRadioButton, &QRadioButton::released, [this] {
+                mainControlDetail().states.remove("pressed");
+                mControlDetails[QRADIOBUTTON_INDICATOR].states.remove("pressed");
+                updateAllControlTitle();
+            });
+        }
+
+        auto dMenu = dynamic_cast<QMenu *>(mContent);
+        if (dMenu) {
+            mControlDetails[QMENU_ITEM] = ControlDetail(q);
+            mControlDetails[QMENU_ICON] = ControlDetail(q);
+            mControlDetails[QMENU_INDICATOR_EXCLUSIVE] = ControlDetail(q);
+            mControlDetails[QMENU_INDICATOR_NONEEXCLUSIVE] = ControlDetail(q);
+            mControlDetails[QMENU_RIGHTARROW] = ControlDetail(q);
+
+            for (auto action : dMenu->actions()) {
+                QObject::connect(action, &QAction::hovered, [action, this] {
+                    mControlDetails[QMENU_ITEM].states.remove("selected");
+                    mControlDetails[QMENU_ICON].states.remove("selected");
+                    mControlDetails[QMENU_INDICATOR_EXCLUSIVE].states.remove("selected");
+                    mControlDetails[QMENU_INDICATOR_NONEEXCLUSIVE].states.remove("selected");
+                    if (action->data().toBool()) {
+                        mControlDetails[action->text()].states.insert("selected");
                     }
-                    updateTitle(action->text());
+                    updateAllControlTitle();
                 });
+                // listen specified QAction check state
+                if (action->data().toBool()) {
+                    QObject::connect(action, &QAction::triggered, [action, this](bool checked) {
+                        if (checked) {
+                            mControlDetails[action->text()].states.insert("checked");
+                        } else {
+                            mControlDetails[action->text()].states.remove("checked");
+                        }
+                        updateTitle(action->text());
+                    });
+                }
             }
         }
-    }
 
-    auto dTabBar = dynamic_cast<QTabBar *>(mContent);
-    if (dTabBar) {
-        mControlDetails[QTABBAR_TAB] = ControlDetail(q);
-        mControlDetails[QTABBAR_FIRST] = ControlDetail(q);
-        mControlDetails[QTABBAR_LAST] = ControlDetail(q);
-        mControlDetails[QTABBAR_CLOSEBUTTON] = ControlDetail(q);
-        // initial state
-        mControlDetails[QTABBAR_FIRST].states.insert("selected");
+        auto dTabBar = dynamic_cast<QTabBar *>(mContent);
+        if (dTabBar) {
+            mControlDetails[QTABBAR_TAB] = ControlDetail(q);
+            mControlDetails[QTABBAR_FIRST] = ControlDetail(q);
+            mControlDetails[QTABBAR_LAST] = ControlDetail(q);
+            mControlDetails[QTABBAR_CLOSEBUTTON] = ControlDetail(q);
+            // initial state
+            mControlDetails[QTABBAR_FIRST].states.insert("selected");
 
 //        auto closeButton = dTabBar->tabButton(2, QTabBar::RightSide);
 //        closeButton->setProperty("controlName", QTABBAR_CLOSEBUTTON);
 //        closeButton->installEventFilter(mEventListener);
 
-        QObject::connect(dTabBar, &QTabBar::currentChanged, [dTabBar, this](int index) {
-            mControlDetails[QTABBAR_TAB].states.remove("selected");
-            mControlDetails[QTABBAR_FIRST].states.remove("selected");
-            mControlDetails[QTABBAR_LAST].states.remove("selected");
+            QObject::connect(dTabBar, &QTabBar::currentChanged, [dTabBar, this](int index) {
+                mControlDetails[QTABBAR_TAB].states.remove("selected");
+                mControlDetails[QTABBAR_FIRST].states.remove("selected");
+                mControlDetails[QTABBAR_LAST].states.remove("selected");
 
-            if (dTabBar->tabText(index) == QTABBAR_TAB) {
-                mControlDetails[QTABBAR_TAB].states.insert("selected");
-            }
-            if (dTabBar->tabText(index) == QTABBAR_FIRST) {
-                mControlDetails[QTABBAR_FIRST].states.insert("selected");
-            }
-            if (dTabBar->tabText(index) == QTABBAR_LAST) {
-                mControlDetails[QTABBAR_LAST].states.insert("selected");
-            }
-            updateAllControlTitle();
-        });
+                if (dTabBar->tabText(index) == QTABBAR_TAB) {
+                    mControlDetails[QTABBAR_TAB].states.insert("selected");
+                }
+                if (dTabBar->tabText(index) == QTABBAR_FIRST) {
+                    mControlDetails[QTABBAR_FIRST].states.insert("selected");
+                }
+                if (dTabBar->tabText(index) == QTABBAR_LAST) {
+                    mControlDetails[QTABBAR_LAST].states.insert("selected");
+                }
+                updateAllControlTitle();
+            });
 
 
+        }
     }
-
-    set_layout:
     for (const auto &v  : mControlDetails) {
         mLayout->addWidget(v.display, 0, Qt::AlignCenter);
     }
