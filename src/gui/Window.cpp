@@ -14,6 +14,8 @@
 #include "GuiCom.hpp"
 #include "WidgetContainer.hpp"
 #include "ButtonContainer.hpp"
+#include "LineEditContainer.hpp"
+#include "ComboBoxContainer.hpp"
 
 QList<QWidget *> gNoParentWidgets;
 
@@ -373,31 +375,46 @@ void WindowPrivate::addQLineEditPage()
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    helper.addWidget(new Showcase(e, page));
+    auto c = new LineEditContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setDisabled(true);
-    helper.addWidget(new Showcase(e, page));
+    c = new LineEditContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setReadOnly(true);
-    helper.addWidget(new Showcase(e, page));
+    c = new LineEditContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
     e = new Type;
     setSize(e);
     e->setText(text);
     e->setEchoMode(QLineEdit::Password);
-    helper.addWidget(new Showcase(e, page));
+    c = new LineEditContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
     e = new Type;
     setSize(e);
     e->setText(text + "+ clear");
     e->setClearButtonEnabled(true);
-    helper.addWidget(new Showcase(e, page));
+    c = new LineEditContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 }
 
 /* *********************************************************************************
@@ -418,18 +435,27 @@ void WindowPrivate::addQComboBoxPage()
     setSize(e);
     e->setEditable(true);
     e->addItems(textList);
-    helper.addWidget(new Showcase(e, page, slp_south));
+    auto c = new ComboBoxContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
     e = new Type;
     setSize(e);
-    e->addItems(textList);
     e->setDisabled(true);
-    helper.addWidget(new Showcase(e, page, slp_south));
+    e->addItems(textList);
+    c = new ComboBoxContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
     e = new Type;
     setSize(e);
     e->addItems(textList);
-    helper.addWidget(new Showcase(e, page, slp_south));
+    c = new ComboBoxContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQCheckBoxPage()

@@ -7,6 +7,8 @@
 
 #include <QString>
 
+class QDebug;
+
 enum WidgetType
 {
     wt_none = -1,
@@ -44,6 +46,7 @@ enum ControlState {
 };
 
 QString controlStateToString(ControlState s);
+QDebug &operator<<(QDebug &debug, ControlState s);
 
 Q_DECLARE_FLAGS(ControlStates, ControlState)
 

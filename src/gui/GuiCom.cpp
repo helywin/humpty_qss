@@ -4,6 +4,7 @@
 
 #include "GuiCom.hpp"
 #include <cassert>
+#include <QDebug>
 
 const char *cWidgetNames[] = {
         "QWidget",
@@ -52,4 +53,10 @@ QString controlStateToString(ControlState s)
         default:
             return "";
     }
+}
+
+QDebug &operator<<(QDebug &debug, ControlState s)
+{
+    debug << "ControlState::cs_" << controlStateToString(s);
+    return debug;
 }

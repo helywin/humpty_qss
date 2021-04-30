@@ -28,6 +28,7 @@ void ContainerPrivate::init()
 //    initWidget(mStatesLayout, mStatesContainer);
     mStatesLayout = new QFormLayout;
     mStatesContainer->setLayout(mStatesLayout);
+    mTitle->setVisible(false);
     mLayout->addWidget(mTitle);
     mLayout->addWidget(mStatesContainer);
 }
@@ -150,6 +151,11 @@ QWidget *Container::listened()
 {
     Q_D(Container);
     return d->mListenWidget;
+}
+
+QSize Container::sizeHint() const
+{
+    return {200, 100};
 }
 
 /*EventListener::EventListener(QObject *parent) : QObject(parent)

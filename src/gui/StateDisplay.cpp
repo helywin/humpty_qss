@@ -52,6 +52,9 @@ StateDisplay::~StateDisplay()
 void StateDisplay::setState(ControlState s, bool on)
 {
     Q_D(StateDisplay);
+    if (!d->mAllStates.testFlag(s)) {
+        qDebug() << (ControlState)s;
+    }
     assert(d->mAllStates.testFlag(s));
     if (on) {
         d->mCurrentStates |= s;

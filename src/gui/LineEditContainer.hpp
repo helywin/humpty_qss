@@ -6,9 +6,24 @@
 #define HUMPTY_QSS_LINEEDITCONTAINER_HPP
 
 
-class LineEditContainer
-{
+#include "Container.hpp"
 
+class LineEditContainerPrivate;
+
+class LineEditContainer : public Container
+{
+Q_OBJECT
+public:
+    explicit LineEditContainer(QWidget *parent = nullptr);
+    ~LineEditContainer() override;
+    void setListenWidget(QWidget *w) override;
+
+protected:
+    void onListenedWidgetEventOccurred(QWidget *watched, QEvent *event) override;
+
+private:
+    Q_DECLARE_PRIVATE(LineEditContainer)
+    Q_DISABLE_COPY(LineEditContainer)
 };
 
 

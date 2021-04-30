@@ -35,6 +35,7 @@ public:
     virtual void setListenWidget(QWidget *w);
     void setWidget(QWidget *w, WidgetPosition wp = wp_north);
     QWidget *listened();
+    QSize sizeHint() const override;
 
 protected:
     explicit Container(ContainerPrivate &dd, QWidget *parent = nullptr);
