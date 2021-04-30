@@ -29,7 +29,8 @@ QString widgetName(WidgetType type);
 WidgetType widgetType(const QString &name);
 
 enum ControlState {
-    cs_none = 0,
+    cs_none = 0x0000,
+    cs_stateFirst = 1 << 0,
     cs_disabled = 1 << 0,
     cs_pressed = 1 << 1,
     cs_hover = 1 << 2,
@@ -39,7 +40,7 @@ enum ControlState {
     cs_indeterminate = 1 << 6,
     cs_selected = 1 << 7,
     cs_on = 1 << 8,
-    cs_stateCount = 8,
+    cs_stateLast = cs_on,
 };
 
 QString controlStateToString(ControlState s);

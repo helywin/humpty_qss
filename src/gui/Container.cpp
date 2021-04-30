@@ -33,10 +33,14 @@ void ContainerPrivate::init()
 }
 
 
-void ContainerPrivate::addControlStateDisplay(const QString &name, ControlStates states)
+void ContainerPrivate::addControlStateDisplay(const QString &name, ControlStates states,
+                                              bool isMainControl)
 {
     assert(!mStateDisplayList.contains(name));
     auto display = new StateDisplay(mStatesContainer);
+    if (isMainControl) {
+        mMainControlName = name;
+    }
     mStateDisplayList[name] = display;
     display->setAllStates(states);
     mStatesLayout->addRow(name, display);
@@ -50,8 +54,8 @@ StateDisplay *ContainerPrivate::stateDisplay(const QString &name)
 
 StateDisplay *ContainerPrivate::mainStateDisplay()
 {
-    assert(mStateDisplayList.contains(mListenWidget->metaObject()->className()));
-    return mStateDisplayList[mListenWidget->metaObject()->className()];;
+    assert(!mMainControlName.isEmpty() && mStateDisplayList.contains(mMainControlName));
+    return mStateDisplayList[mMainControlName];;
 }
 
 void ContainerPrivate::setListenWidget(QWidget *w)
@@ -121,7 +125,7 @@ void Container::setListenWidget(QWidget *w)
 void Container::setWidget(QWidget *w, WidgetPosition wp)
 {
     Q_D(Container);
-    d->mLayout->insertWidget(wp, w);
+    d->mLayout->insertWidget(wp, w, 0, Qt::AlignCenter);
 }
 
 bool Container::eventFilter(QObject *watched, QEvent *event)

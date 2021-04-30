@@ -22,13 +22,15 @@ public:
     QWidget *mStatesContainer;
     QFormLayout *mStatesLayout;
     QMap<QString, StateDisplay *> mStateDisplayList;
+    QString mMainControlName;
     bool mListenGlobalMouseEvent = false;
     QWidget *mListenWidget = nullptr;
 
     explicit ContainerPrivate(Container *p);
     void init();
     void setListenWidget(QWidget *w);
-    void addControlStateDisplay(const QString &name, ControlStates states);
+    void addControlStateDisplay(const QString &name, ControlStates states,
+                                bool isMainControl = true);
     StateDisplay *stateDisplay(const QString &name);
     StateDisplay *mainStateDisplay();
 };

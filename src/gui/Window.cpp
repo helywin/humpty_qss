@@ -13,6 +13,7 @@
 #include "QssEditorConfig.hpp"
 #include "GuiCom.hpp"
 #include "WidgetContainer.hpp"
+#include "ButtonContainer.hpp"
 
 QList<QWidget *> gNoParentWidgets;
 
@@ -185,7 +186,7 @@ WindowPrivate::WindowPrivate(Window *p) :
                      "    qproperty-indent: 10;\n"
                      "}");
     mEditPage->setSizePolicy(QSizePolicy::Expanding,
-                               QSizePolicy::Preferred);
+                             QSizePolicy::Preferred);
     vbox = new QVBoxLayout(mEditPage);
     vbox->addWidget(mEditor);
     vbox->addWidget(mUpdate);
@@ -201,6 +202,7 @@ WindowPrivate::WindowPrivate(Window *p) :
 QWidget *WindowPrivate::initPage(WidgetType type, QGridLayout *&grid)
 {
     auto page = mPages[type];
+    assert(page->windowTitle().isEmpty());
     page->setWindowTitle(widgetName(type));
     auto pageLayout = new QVBoxLayout(page);
     page->setLayout(pageLayout);
@@ -299,21 +301,30 @@ void WindowPrivate::addQPushButton()
     using Type = QPushButton;
 
     auto e = new Type;
-    setSize(e);
     e->setText(text);
-    helper.addWidget(new Showcase(e, page));
+    auto c = new ButtonContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 
     e = new Type;
-    setSize(e);
     e->setText(text);
+    c = new ButtonContainer(page);
     e->setDisabled(true);
-    helper.addWidget(new Showcase(e, page));
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 
     e = new Type;
-    setSize(e);
     e->setText(text);
     e->setCheckable(true);
-    helper.addWidget(new Showcase(e, page));
+    c = new ButtonContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQToolButton()
@@ -325,21 +336,30 @@ void WindowPrivate::addQToolButton()
     using Type = QToolButton;
 
     auto e = new Type;
-    setSize(e);
     e->setText(text);
-    helper.addWidget(new Showcase(e, page));
+    auto c = new ButtonContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 
     e = new Type;
-    setSize(e);
     e->setText(text);
+    c = new ButtonContainer(page);
     e->setDisabled(true);
-    helper.addWidget(new Showcase(e, page));
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 
     e = new Type;
-    setSize(e);
     e->setText(text);
     e->setCheckable(true);
-    helper.addWidget(new Showcase(e, page));
+    c = new ButtonContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQLineEditPage()

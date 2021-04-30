@@ -37,7 +37,6 @@ void WidgetContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *ev
     Q_D(WidgetContainer);
     switch (event->type()) {
         case QEvent::Enter:
-            qDebug() << "enter";
             d->mainStateDisplay()->setState(cs_hover, true);
             break;
         case QEvent::Leave:
@@ -58,5 +57,4 @@ void WidgetContainer::setListenWidget(QWidget *w)
         d->addControlStateDisplay(w->metaObject()->className(), cs_disabled);
         d->mainStateDisplay()->setState(cs_disabled);
     }
-    qDebug() << (unsigned long long) d;
 }

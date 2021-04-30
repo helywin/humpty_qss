@@ -8,6 +8,7 @@
 #include <QVariant>
 #include <QBoxLayout>
 #include <QStyle>
+#include <QDebug>
 #include <cassert>
 
 #include "Utils.hpp"
@@ -67,7 +68,7 @@ void StateDisplay::setAllStates(ControlStates states)
     assert(!d->mIsAllStateInit);
     d->mIsAllStateInit = true;
     d->mAllStates = states;
-    for (int i = 0; i < cs_stateCount; ++i) {
+    for (int i = cs_stateFirst; i <= cs_stateLast; i <<= 1) {
         auto state = static_cast<ControlState>(i);
         if (d->mAllStates.testFlag(state)) {
             d->mLabels[i] = new QLabel(controlStateToString(state), this);
