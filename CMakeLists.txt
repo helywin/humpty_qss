@@ -53,8 +53,8 @@ endif ()
 # 设置编译参数
 if (UNIX)
     set(DEFINES "-Wunused-parameter")
-    set(CMAKE_CXX_FLAGS_DEBUG "-pipe -O0 -Wall -W -D_REENTRANT -fPIC ${DEFINES}")
-    set(CMAKE_C_FLAGS_DEBUG "-pipe -O0 -Wall -W -D_REENTRANT -fPIC ${DEFINES}")
+    set(CMAKE_CXX_FLAGS_DEBUG "-pipe -O0 -g -Wall -W -D_REENTRANT -fPIC ${DEFINES}")
+    set(CMAKE_C_FLAGS_DEBUG "-pipe -O0 -g -Wall -W -D_REENTRANT -fPIC ${DEFINES}")
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fno-pie")
 
     set(CMAKE_CXX_FLAGS_RELEASE "-pipe -O2 -Wall -W -D_REENTRANT -fPIC ${DEFINES}")

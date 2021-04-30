@@ -12,6 +12,7 @@
 #include "Showcase.hpp"
 #include "QssEditorConfig.hpp"
 #include "GuiCom.hpp"
+#include "WidgetContainer.hpp"
 
 QList<QWidget *> gNoParentWidgets;
 
@@ -225,13 +226,19 @@ void WindowPrivate::addQWidgetPage()
     using Type = QWidget;
 
     auto e = new Type;
+    auto c = new WidgetContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
     setSize(e);
-    helper.addWidget(new Showcase(e, page));
+    helper.addWidget(c);
 
     e = new Type;
-    setSize(e);
+    c = new WidgetContainer(page);
     e->setDisabled(true);
-    helper.addWidget(new Showcase(e, page));
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQFramePage()
@@ -242,13 +249,19 @@ void WindowPrivate::addQFramePage()
     using Type = QFrame;
 
     auto e = new Type;
+    auto c = new WidgetContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
     setSize(e);
-    helper.addWidget(new Showcase(e, page));
+    helper.addWidget(c);
 
-    e = new Type;;
-    setSize(e);
+    e = new Type;
+    c = new WidgetContainer(page);
     e->setDisabled(true);
-    helper.addWidget(new Showcase(e, page));
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQLabelPage()
@@ -260,15 +273,21 @@ void WindowPrivate::addQLabelPage()
     using Type = QLabel;
 
     auto e = new Type;
-    setSize(e);
     e->setText(text);
-    helper.addWidget(new Showcase(e, page));
+    auto c = new WidgetContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 
     e = new Type;
-    setSize(e);
     e->setText(text);
+    c = new WidgetContainer(page);
     e->setDisabled(true);
-    helper.addWidget(new Showcase(e, page));
+    c->setWidget(e);
+    c->setListenWidget(e);
+    setSize(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQPushButton()

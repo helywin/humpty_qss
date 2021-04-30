@@ -32,21 +32,19 @@ public:
 #endif
     QStandardItemModel *objectTree();
     bool eventFilter(QObject *watched, QEvent *event) final;
+    virtual void setListenWidget(QWidget *w);
+    void setWidget(QWidget *w, WidgetPosition wp = wp_north);
+    QWidget *listened();
 
 protected:
-    explicit Container(ContainerPrivate &d, QWidget *parent = nullptr);
+    explicit Container(ContainerPrivate &dd, QWidget *parent = nullptr);
     virtual void onListenedWidgetEventOccurred(QWidget *watched, QEvent *event);
     virtual void onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button);
-    void setListenWidget(QWidget *w);
-    void setWidget(QWidget *w, WidgetPosition wp = wp_north);
-    void addControlStateDisplay(const QString &name, ControlStates states);
-    StateDisplay *stateDisplay(const QString &name);
 
-
-private:
+protected:
+    QScopedPointer<ContainerPrivate> d_ptr;
     Q_DECLARE_PRIVATE(Container)
     Q_DISABLE_COPY(Container)
-    QSharedPointer<ContainerPrivate> d_ptr;
 };
 
 

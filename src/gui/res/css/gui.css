@@ -5,3 +5,17 @@ Showcase {
 QToolTip {
   font-family: "consolas";
 }
+
+#StateLabel {
+  border-radius: 4px;
+}
+
+#StateLabel[active="true"] {
+  background: red;
+  /*border: 1px solid red;*/
+}
+
+#StateLabel[active="false"] {
+  background: transparent;
+  border: none;
+}
