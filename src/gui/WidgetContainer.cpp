@@ -4,6 +4,7 @@
 
 #include "WidgetContainer.hpp"
 #include "Container_p.hpp"
+#include <QDebug>
 
 
 class WidgetContainerPrivate : public ContainerPrivate
@@ -21,8 +22,7 @@ WidgetContainerPrivate::WidgetContainerPrivate(WidgetContainer *p) :
 }
 
 WidgetContainer::WidgetContainer(QWidget *parent) :
-        Container(parent),
-        d_ptr(new WidgetContainerPrivate(this))
+        Container(*new WidgetContainerPrivate(this), parent)
 {
     Q_D(WidgetContainer);
 }
@@ -37,10 +37,11 @@ void WidgetContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *ev
     Q_D(WidgetContainer);
     switch (event->type()) {
         case QEvent::Enter:
-            d->mainStateDisplay()->setState(cs_hover, false);
+            qDebug() << "enter";
+            d->mainStateDisplay()->setState(cs_hover, true);
             break;
         case QEvent::Leave:
-            d->mainStateDisplay()->setState(cs_hover, true);
+            d->mainStateDisplay()->setState(cs_hover, false);
             break;
         default:
             break;
@@ -51,5 +52,11 @@ void WidgetContainer::setListenWidget(QWidget *w)
 {
     Q_D(WidgetContainer);
     Container::setListenWidget(w);
-    d->addControlStateDisplay(w->metaObject()->className(), cs_hover);
+    if (w->isEnabled()) {
+        d->addControlStateDisplay(w->metaObject()->className(), cs_hover);
+    } else {
+        d->addControlStateDisplay(w->metaObject()->className(), cs_disabled);
+        d->mainStateDisplay()->setState(cs_disabled);
+    }
+    qDebug() << (unsigned long long) d;
 }

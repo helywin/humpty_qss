@@ -26,6 +26,7 @@ public:
     QWidget *mListenWidget = nullptr;
 
     explicit ContainerPrivate(Container *p);
+    void init();
     void setListenWidget(QWidget *w);
     void addControlStateDisplay(const QString &name, ControlStates states);
     StateDisplay *stateDisplay(const QString &name);

@@ -37,15 +37,14 @@ public:
     QWidget *listened();
 
 protected:
-    explicit Container(ContainerPrivate &d, QWidget *parent = nullptr);
+    explicit Container(ContainerPrivate &dd, QWidget *parent = nullptr);
     virtual void onListenedWidgetEventOccurred(QWidget *watched, QEvent *event);
     virtual void onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button);
 
-
-private:
+protected:
+    QScopedPointer<ContainerPrivate> d_ptr;
     Q_DECLARE_PRIVATE(Container)
     Q_DISABLE_COPY(Container)
-    QSharedPointer<ContainerPrivate> d_ptr;
 };
 
 

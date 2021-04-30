@@ -33,6 +33,7 @@ StateDisplayPrivate::StateDisplayPrivate(StateDisplay *p) :
 {
     Q_Q(StateDisplay);
     initWidget(mLayout, q);
+    mLayout->setMargin(0);
 }
 
 StateDisplay::StateDisplay(QWidget *parent) :

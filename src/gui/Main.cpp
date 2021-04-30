@@ -76,7 +76,9 @@ int main(int argc, char *argv[])
     QFile file(":css/gui.css");
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QFont font = QApplication::font();
+#ifdef _WINDOWS
     font.setFamily("Microsoft YaHei");
+#endif
     // let hidpi font scale
     font.setPointSize(12);
     qDebug() << font.pixelSize();

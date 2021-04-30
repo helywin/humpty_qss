@@ -4,6 +4,7 @@
 
 #include "Container.hpp"
 #include <cassert>
+#include <QDebug>
 
 #include "StateDisplay.hpp"
 #include "Utils.hpp"
@@ -15,15 +16,22 @@ using namespace Com;
 ContainerPrivate::ContainerPrivate(Container *p) :
         q_ptr(p)
 {
+
+}
+
+void ContainerPrivate::init()
+{
     Q_Q(Container);
     initWidget(mLayout, q);
     initWidget(mTitle, q);
     initWidget(mStatesContainer, q);
-    initWidget(mStatesLayout, mStatesContainer);
+//    initWidget(mStatesLayout, mStatesContainer);
     mStatesLayout = new QFormLayout;
+    mStatesContainer->setLayout(mStatesLayout);
     mLayout->addWidget(mTitle);
     mLayout->addWidget(mStatesContainer);
 }
+
 
 void ContainerPrivate::addControlStateDisplay(const QString &name, ControlStates states)
 {
@@ -31,17 +39,18 @@ void ContainerPrivate::addControlStateDisplay(const QString &name, ControlStates
     auto display = new StateDisplay(mStatesContainer);
     mStateDisplayList[name] = display;
     display->setAllStates(states);
+    mStatesLayout->addRow(name, display);
 }
 
 StateDisplay *ContainerPrivate::stateDisplay(const QString &name)
 {
-    assert(!mStateDisplayList.contains(name));
+    assert(mStateDisplayList.contains(name));
     return mStateDisplayList[name];
 }
 
 StateDisplay *ContainerPrivate::mainStateDisplay()
 {
-    assert(!mStateDisplayList.contains(mListenWidget->metaObject()->className()));
+    assert(mStateDisplayList.contains(mListenWidget->metaObject()->className()));
     return mStateDisplayList[mListenWidget->metaObject()->className()];;
 }
 
@@ -49,7 +58,10 @@ void ContainerPrivate::setListenWidget(QWidget *w)
 {
     Q_Q(Container);
     mListenWidget = w;
-    w->installEventFilter(q);
+    mListenWidget->setProperty("test", true);
+    if (w->isEnabled()) {
+        w->installEventFilter(q);
+    }
 }
 
 Container::Container(QWidget *parent) :
@@ -59,11 +71,12 @@ Container::Container(QWidget *parent) :
     Q_D(Container);
 }
 
-Container::Container(ContainerPrivate &d, QWidget *parent) :
+Container::Container(ContainerPrivate &dd, QWidget *parent) :
         QFrame(parent),
-        d_ptr(&d)
+        d_ptr(&dd)
 {
-
+    Q_D(Container);
+    d->init();
 }
 
 
@@ -102,8 +115,7 @@ void Container::onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button)
 void Container::setListenWidget(QWidget *w)
 {
     Q_D(Container);
-    d->mListenWidget = w;
-    w->installEventFilter(this);
+    d->setListenWidget(w);
 }
 
 void Container::setWidget(QWidget *w, WidgetPosition wp)
