@@ -10,6 +10,14 @@
 #include <QEvent>
 #include <QStringList>
 #include <QMetaEnum>
+
+#ifdef _WINDOWS
+
+#include <Windows.h>
+#include <DbgHelp.h>
+
+#endif
+
 #include "Utils_Export.hpp"
 
 class QWidget;
@@ -17,7 +25,6 @@ class QObject;
 class QSettings;
 class QVariant;
 class QString;
-
 namespace Com
 {
 // 几个偷懒的公用函数, 用来初始化控件
@@ -89,7 +96,7 @@ inline QStringList flagsToStringList(QFlags<T> flags)
     QStringList result;
     for (int i = 0; i < keyCount; ++i) {
         const char *key = QMetaEnum::fromType<T>().key(i);
-        if (flags.testFlag((T)QMetaEnum::fromType<T>().value(i))) {
+        if (flags.testFlag((T) QMetaEnum::fromType<T>().value(i))) {
             result.append(key);
         }
     }

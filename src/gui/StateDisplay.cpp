@@ -53,6 +53,7 @@ void StateDisplay::setState(ControlState s, bool on)
 {
     Q_D(StateDisplay);
     if (!d->mAllStates.testFlag(s)) {
+        qDebug() << d->mAllStates;
         qDebug() << (ControlState)s;
     }
     assert(d->mAllStates.testFlag(s));
@@ -69,7 +70,6 @@ void StateDisplay::setAllStates(ControlStates states)
 {
     Q_D(StateDisplay);
     assert(!d->mIsAllStateInit);
-    d->mIsAllStateInit = true;
     d->mAllStates = states;
     for (int i = cs_stateFirst; i <= cs_stateLast; i <<= 1) {
         auto state = static_cast<ControlState>(i);
@@ -81,5 +81,6 @@ void StateDisplay::setAllStates(ControlStates states)
         }
     }
     d->mLayout->addStretch(1);
+    d->mIsAllStateInit = true;
 }
 

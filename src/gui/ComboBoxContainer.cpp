@@ -48,6 +48,7 @@ void ComboBoxContainer::setListenWidget(QWidget *w)
     states |= cs_on;
     if (!comboBox->isEditable()) {
         name += "[read-only]";
+        states ^= cs_focus;
     }
     if (!comboBox->isEnabled()) {
         states = cs_disabled;
@@ -56,8 +57,8 @@ void ComboBoxContainer::setListenWidget(QWidget *w)
     d->addControlStateDisplay(d->mMainControlName, states);
     d->mDropDown = QString(w->metaObject()->className()) + "::drop-down";
     d->mDownArrow = QString(w->metaObject()->className()) + "::down-arrow";
-    d->addControlStateDisplay(d->mDropDown, cs_pressed);
-    d->addControlStateDisplay(d->mDownArrow, cs_pressed);
+    d->addControlStateDisplay(d->mDropDown, cs_pressed, false);
+    d->addControlStateDisplay(d->mDownArrow, cs_pressed, false);
     setListenGlobalMouseEvent(true);
     comboBox->view()->installEventFilter(this);
 }
@@ -76,6 +77,7 @@ void ComboBoxContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *
     switch (event->type()) {
         case QEvent::Enter:
             qDebug() << "enter";
+            qDebug() << d->mMainControlName;
             d->mainStateDisplay()->setState(cs_hover, true);
             break;
         case QEvent::Leave:
@@ -98,6 +100,20 @@ void ComboBoxContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *
                     d->stateDisplay(d->mDropDown)->setState(cs_pressed, true);
                     d->stateDisplay(d->mDownArrow)->setState(cs_pressed, true);
                 }
+            }
+            break;
+        }
+        case QEvent::FocusIn: {
+            auto comboBox = dynamic_cast<QComboBox *>(watched);
+            if (comboBox && comboBox->isEditable()) {
+                d->mainStateDisplay()->setState(cs_focus, true);
+            }
+            break;
+        }
+        case QEvent::FocusOut: {
+            auto comboBox = dynamic_cast<QComboBox *>(watched);
+            if (comboBox && comboBox->isEditable()) {
+                d->mainStateDisplay()->setState(cs_focus, false);
             }
             break;
         }

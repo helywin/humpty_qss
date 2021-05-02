@@ -14,6 +14,10 @@ target_link_libraries(${CURRENT_MODULE_TARGET}
         Qt5::Widgets
         ${MODULE_LIBS}
         )
+if (WIN32)
+    target_link_libraries(${CURRENT_MODULE_TARGET}
+            dbghelp)
+endif ()
 set(ICON_PATH ${CMAKE_SOURCE_DIR}/res/solar.ico)
 string(REPLACE "/" "\\\\" ICON_PATH_ESCAPED ${ICON_PATH})
 generate_meta_info(
