@@ -44,6 +44,9 @@ void ContainerPrivate::addControlStateDisplay(const QString &name, ControlStates
     }
     mStateDisplayList[name] = display;
     display->setAllStates(states);
+    if (states == cs_disabled) {
+        display->setState(cs_disabled, true);
+    }
     mStatesLayout->addRow(name, display);
 }
 

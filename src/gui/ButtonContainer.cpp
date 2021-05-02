@@ -78,7 +78,6 @@ void ButtonContainer::setListenWidget(QWidget *w)
         d->addControlStateDisplay(w->metaObject()->className(), states);
     } else {
         d->addControlStateDisplay(w->metaObject()->className(), cs_disabled);
-        d->mainStateDisplay()->setState(cs_disabled);
     }
     connect(ab, &QAbstractButton::pressed, [this] {
         d_ptr->mainStateDisplay()->setState(cs_pressed, true);

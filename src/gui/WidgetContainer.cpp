@@ -55,6 +55,5 @@ void WidgetContainer::setListenWidget(QWidget *w)
         d->addControlStateDisplay(w->metaObject()->className(), cs_hover);
     } else {
         d->addControlStateDisplay(w->metaObject()->className(), cs_disabled);
-        d->mainStateDisplay()->setState(cs_disabled);
     }
 }

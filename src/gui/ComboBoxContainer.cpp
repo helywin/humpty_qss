@@ -57,8 +57,13 @@ void ComboBoxContainer::setListenWidget(QWidget *w)
     d->addControlStateDisplay(d->mMainControlName, states);
     d->mDropDown = QString(w->metaObject()->className()) + "::drop-down";
     d->mDownArrow = QString(w->metaObject()->className()) + "::down-arrow";
-    d->addControlStateDisplay(d->mDropDown, cs_pressed, false);
-    d->addControlStateDisplay(d->mDownArrow, cs_pressed, false);
+    if (comboBox->isEnabled()) {
+        d->addControlStateDisplay(d->mDropDown, cs_pressed, false);
+        d->addControlStateDisplay(d->mDownArrow, cs_pressed, false);
+    } else {
+        d->addControlStateDisplay(d->mDropDown, cs_disabled, false);
+        d->addControlStateDisplay(d->mDownArrow, cs_disabled, false);
+    }
     setListenGlobalMouseEvent(true);
     comboBox->view()->installEventFilter(this);
 }

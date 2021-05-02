@@ -16,7 +16,6 @@ class ContainerPrivate
 public:
     Q_DECLARE_PUBLIC(Container)
     Container *q_ptr;
-    QMap<QString, StateDisplay *> mStateDisplay;
     QVBoxLayout *mLayout;
     QLabel *mTitle;
     QWidget *mStatesContainer;

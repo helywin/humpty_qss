@@ -17,6 +17,7 @@
 #include "LineEditContainer.hpp"
 #include "ComboBoxContainer.hpp"
 #include "CheckContainer.hpp"
+#include "MenuContainer.hpp"
 
 QList<QWidget *> gNoParentWidgets;
 
@@ -526,9 +527,10 @@ void WindowPrivate::addQMenuPage()
     const QString text = "菜单/Menu";
     QGridLayout *grid;
     auto page = initPage(wt_menu, grid);
-    GridLayoutHelper helper(grid);using Type = QMenu;
+    GridLayoutHelper helper(grid);
+    using Type = QMenu;
 
-    auto e = new Type;
+/*    auto e = new Type;
     e->setTitle(text);
     auto menu = new QMenu("expand", e);
     menu->addAction(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_ComputerIcon),
@@ -587,7 +589,71 @@ void WindowPrivate::addQMenuPage()
         e->exec(QCursor::pos());
     });
     gNoParentWidgets.append(e);
-    helper.addWidget(new Showcase(e, button, page, slp_south));
+    helper.addWidget(new Showcase(e, button, page, slp_south));*/
+
+    auto e = new Type;
+    e->setTitle(text);
+    auto menu = new QMenu("expand", e);
+    menu->addAction(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_ComputerIcon),
+                    "computer");
+    e->addMenu(menu);
+    e->addSection(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_DriveDVDIcon),
+                  "-- exclusive --");
+    auto ag = new QActionGroup(q);
+    QAction *a;
+    ag->setExclusive(true);
+    ag->addAction((a = new QAction("none", e),
+            a->setCheckable(true),
+            a->setChecked(true),
+            a));
+    ag->addAction((a = new QAction("dir", e),
+            a->setIcon(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_DirIcon)),
+            a->setCheckable(true),
+            a));
+    ag->addAction((a = new QAction("QMenu::indicator:exclusive", e),
+            a->setCheckable(true),
+            a->setData(true),
+            a));
+    e->addActions(ag->actions());
+    e->addSection("-- non-exclusive --");
+    ag = new QActionGroup(q);
+    ag->setExclusive(false);
+    ag->addAction((a = new QAction("none", e),
+            a->setCheckable(true),
+            a->setChecked(true),
+            a));
+    ag->addAction((a = new QAction("trash", e),
+            a->setIcon(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_TrashIcon)),
+            a->setCheckable(true),
+            a->setChecked(true),
+            a));
+    ag->addAction((a = new QAction("QMenu::indicator:non-exclusive", e),
+            a->setCheckable(true),
+            a->setData(true),
+            a));
+    e->addActions(ag->actions());
+    e->addSection("-- item --");
+    e->addAction((a = new QAction("QMenu::item", e),
+            a->setCheckable(true),
+            a->setData(true),
+            a));
+    e->addAction((a = new QAction("QMenu::icon", e),
+            a->setCheckable(true),
+            a->setData(true),
+            a->setIcon(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon)),
+            a));
+    e->addAction((a = new QAction("QMenu:item:disabled", e),
+            a->setDisabled(true),
+            a));
+    auto button = new QPushButton("click to show menu");
+    QObject::connect(button, &QPushButton::clicked, [e] {
+        e->exec(QCursor::pos());
+    });
+    gNoParentWidgets.append(e);
+    auto c = new MenuContainer(page);
+    c->setWidget(button, Container::wp_south);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQTabBarPage()
