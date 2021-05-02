@@ -16,6 +16,7 @@
 #include "ButtonContainer.hpp"
 #include "LineEditContainer.hpp"
 #include "ComboBoxContainer.hpp"
+#include "CheckContainer.hpp"
 
 QList<QWidget *> gNoParentWidgets;
 
@@ -469,19 +470,28 @@ void WindowPrivate::addQCheckBoxPage()
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    helper.addWidget(new Showcase(e, page));
+    auto c = new CheckContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
     e = new Type;
+    e->setEnabled(false);
     setSize(e);
     e->setText(text);
-    e->setDisabled(true);
-    helper.addWidget(new Showcase(e, page));
+    c = new CheckContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
     e = new Type;
-    setSize(e);
-    e->setText(text);
     e->setTristate(true);
-    helper.addWidget(new Showcase(e, page));
+    setSize(e);
+    e->setText(text);
+    c = new CheckContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQRadioButtonPage()
@@ -495,13 +505,19 @@ void WindowPrivate::addQRadioButtonPage()
     auto e = new Type;
     setSize(e);
     e->setText(text);
-    helper.addWidget(new Showcase(e, page));
+    auto c = new CheckContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
     e = new Type;
+    e->setEnabled(false);
     setSize(e);
     e->setText(text);
-    e->setDisabled(true);
-    helper.addWidget(new Showcase(e, page));
+    c = new CheckContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQMenuPage()
