@@ -18,6 +18,7 @@
 #include "ComboBoxContainer.hpp"
 #include "CheckContainer.hpp"
 #include "MenuContainer.hpp"
+#include "TabBarContainer.hpp"
 
 QList<QWidget *> gNoParentWidgets;
 
@@ -681,20 +682,27 @@ void WindowPrivate::addQTabBarPage()
     e->setTabEnabled(3, false);
     helper.addWidget(new Showcase(e, page));
 
-//    auto container = new QWidget;
-//    auto hbox = new QHBoxLayout(container);
-//    auto button = new QPushButton("add", container);
-//    e = new Type;
-//    e->setMinimumWidth(500);
-//    e->addTab("QTabBar:first");
-//    e->addTab("QTabBar::tab1");
-//    e->addTab("disabled");
-//    e->addTab(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
-//              "icon");
-//    e->addTab("QTabBar:last");
-//    e->setTabsClosable(true);
-//    e->setTabEnabled(2, false);
-//    helper.addWidget(new Showcase(e, page));
+    e = new Type;
+    e->setMinimumWidth(400);
+    e->addTab("QTabBar:first");
+    e->addTab("QTabBar::tab");
+    e->addTab("QTabBar::close-button");
+    e->addTab("disabled");
+    e->addTab(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
+              "icon");
+    e->addTab("QTabBar:last");
+    e->setTabsClosable(true);
+    e->setTabButton(0, QTabBar::RightSide, nullptr);
+    e->setTabButton(1, QTabBar::RightSide, nullptr);
+//    e->setTabButton(2, QTabBar::RightSide, nullptr);
+    e->setTabButton(3, QTabBar::RightSide, nullptr);
+    e->setTabButton(4, QTabBar::RightSide, nullptr);
+    e->setTabButton(5, QTabBar::RightSide, nullptr);
+    e->setTabEnabled(3, false);
+    auto c = new TabBarContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 
 }
 
