@@ -665,13 +665,13 @@ void WindowPrivate::addQTabBarPage()
     using Type = QTabBar;
 
     auto e = new Type;
-    e->addTab("QTabBar:first");
+    e->addTab("QTabBar::tab:first");
     e->addTab("QTabBar::tab");
     e->addTab("QTabBar::close-button");
-    e->addTab("disabled");
+    e->addTab("QTabBar::tab:disabled");
     e->addTab(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
               "icon");
-    e->addTab("QTabBar:last");
+    e->addTab("QTabBar::tab:last");
     e->setTabsClosable(true);
     e->setTabButton(0, QTabBar::RightSide, nullptr);
     e->setTabButton(1, QTabBar::RightSide, nullptr);
@@ -684,13 +684,13 @@ void WindowPrivate::addQTabBarPage()
 
     e = new Type;
     e->setMinimumWidth(400);
-    e->addTab("QTabBar:first");
+    e->addTab("QTabBar::tab:first");
     e->addTab("QTabBar::tab");
     e->addTab("QTabBar::close-button");
-    e->addTab("disabled");
+    e->addTab("QTabBar::tab:disabled");
     e->addTab(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
               "icon");
-    e->addTab("QTabBar:last");
+    e->addTab("QTabBar::tab:last");
     e->setTabsClosable(true);
     e->setTabButton(0, QTabBar::RightSide, nullptr);
     e->setTabButton(1, QTabBar::RightSide, nullptr);
