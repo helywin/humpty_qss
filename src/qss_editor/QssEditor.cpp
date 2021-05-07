@@ -66,7 +66,11 @@ void QssEditor::keyPressEvent(QKeyEvent *e)
     if (d->mConfig.autoParentheses() && ((e->modifiers() == Qt::ShiftModifier &&
                                           e->key() == Qt::Key_ParenLeft) ||
                                          e->key() == Qt::Key_BraceLeft)) {
-        insertPlainText("{}");
+        if (e->key() == Qt::Key_ParenLeft) {
+            insertPlainText("()");
+        } else if (e->key() == Qt::Key_BraceLeft) {
+            insertPlainText("{}");
+        }
         moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
         return;
     }

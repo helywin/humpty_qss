@@ -9,6 +9,9 @@
 #include <QHoverEvent>
 #include <QTabBar>
 #include <QAbstractButton>
+#include <QMouseEvent>
+#include <QToolButton>
+#include <cassert>
 
 
 class TabBarContainerPrivate : public ContainerPrivate
@@ -18,6 +21,11 @@ public:
     QStringList mTabTypes;
     QMap<QString, int> mTabInfos;
     QString mCloseButton;
+    QString mTear;
+    QString mScroller;
+    QString mLeftArrow;
+    QString mRightArrow;
+    QList<QToolButton *> mToolButtons;
 
     explicit TabBarContainerPrivate(TabBarContainer *p);
 };
@@ -30,6 +38,10 @@ TabBarContainerPrivate::TabBarContainerPrivate(TabBarContainer *p) :
               << "QTabBar::tab"
               << "QTabBar::tab:last"
               << "QTabBar::tab:only-one";
+    mTear = "QTabBar::tear";
+    mScroller = "QTabBar::scroller";
+    mLeftArrow = "QTabBar QToolButton::left-arrow";
+    mRightArrow = "QTabBar QToolButton::right-arrow";
 }
 
 TabBarContainer::TabBarContainer(QWidget *parent) :
@@ -51,6 +63,9 @@ void TabBarContainer::setListenWidget(QWidget *w)
     if (!tabBar) {
         std::abort();
     }
+#ifdef __linux
+    tabBar->setMouseTracking(true);
+#endif
     QString className = w->metaObject()->className();
     d->mCloseButton = className + "::close-button";
     d->addControlStateDisplay(className, cs_none);
@@ -105,14 +120,70 @@ void TabBarContainer::setListenWidget(QWidget *w)
         }
     }
 
+    d->addControlStateDisplay(d->mTear, cs_none);
+    d->addControlStateDisplay(d->mScroller, cs_none);
+    states = cs_pressed;
+    states |= cs_hover;
+    states |= cs_disabled;
+    d->addControlStateDisplay(d->mLeftArrow, states);
+    d->addControlStateDisplay(d->mRightArrow, states);
+
+    for (auto child : tabBar->children()) {
+        auto b = dynamic_cast<QToolButton *>(child);
+        if (b) {
+            d->mToolButtons.append(b);
+        }
+    }
+    assert(d->mToolButtons.size() == 2);
+    //toolButtons[0] is left-arrow
+    //toolButtons[1] is right-arrow
+    d->mToolButtons[0]->setObjectName(d->mLeftArrow);
+    d->mToolButtons[1]->setObjectName(d->mRightArrow);
+    d->mToolButtons[0]->installEventFilter(this);
+    d->mToolButtons[1]->installEventFilter(this);
+    connect(d->mToolButtons[0], &QToolButton::pressed, [this] {
+        auto d = (TabBarContainerPrivate *) d_ptr.data();
+        d->stateDisplay(d->mLeftArrow)->setState(cs_pressed, true);
+    });
+    connect(d->mToolButtons[0], &QToolButton::released, [this] {
+        auto d = (TabBarContainerPrivate *) d_ptr.data();
+        d->stateDisplay(d->mLeftArrow)->setState(cs_pressed, false);
+    });
+    connect(d->mToolButtons[1], &QToolButton::pressed, [this] {
+        auto d = (TabBarContainerPrivate *) d_ptr.data();
+        d->stateDisplay(d->mRightArrow)->setState(cs_pressed, true);
+    });
+    connect(d->mToolButtons[1], &QToolButton::released, [this] {
+        auto d = (TabBarContainerPrivate *) d_ptr.data();
+        d->stateDisplay(d->mRightArrow)->setState(cs_pressed, false);
+    });
+
+    auto updateToolButtonEnabled = [this] {
+        auto d = (TabBarContainerPrivate *) d_ptr.data();
+        for (auto btn : d->mToolButtons) {
+            d->stateDisplay(btn->objectName())->setState(cs_disabled, !btn->isEnabled());
+            if (!btn->isEnabled()) {
+                d->stateDisplay(btn->objectName())->setState(cs_hover, false);
+                d->stateDisplay(btn->objectName())->setState(cs_pressed, false);
+            }
+        }
+    };
+
+    connect(d->mToolButtons[0], &QToolButton::clicked, updateToolButtonEnabled);
+    connect(d->mToolButtons[1], &QToolButton::clicked, updateToolButtonEnabled);
+
+    d->stateDisplay(d->mLeftArrow)->setState(cs_disabled, !d->mToolButtons[0]->isEnabled());
+    d->stateDisplay(d->mRightArrow)->setState(cs_disabled, !d->mToolButtons[1]->isEnabled());
 }
 
 void TabBarContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *event)
 {
     Q_D(TabBarContainer);
+    auto tabBar = dynamic_cast<QTabBar *>(d->mListenWidget);
+#ifdef _WINDOWS
     auto hoverEvent = dynamic_cast<QHoverEvent *>(event);
-    auto tabBar = dynamic_cast<QTabBar *>(watched);
     if (hoverEvent && tabBar) {
+        qDebug() << "linux hover";
         for (const auto &tab : d->mTabInfos.keys()) {
             d->stateDisplay(tab)->setState(cs_hover, false);
             if (tabBar->tabRect(d->mTabInfos[tab]).contains(hoverEvent->pos())) {
@@ -121,11 +192,41 @@ void TabBarContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *ev
         }
         return;
     }
+#elif __linux
+    auto mouseEvent = dynamic_cast<QMouseEvent *>(event);
+    if (mouseEvent && event->type() == QEvent::MouseMove) {
+        for (const auto &tab : d->mTabInfos.keys()) {
+            d->stateDisplay(tab)->setState(cs_hover, false);
+            if (tabBar->tabRect(d->mTabInfos[tab]).contains(mouseEvent->pos())) {
+                d->stateDisplay(tab)->setState(cs_hover, true);
+            }
+        }
+    }
+#endif
     if (watched->metaObject()->className() == QString("CloseButton")) {
         if (event->type() == QEvent::Enter) {
             d->stateDisplay(d->mCloseButton)->setState(cs_hover, true);
         } else if (event->type() == QEvent::Leave) {
             d->stateDisplay(d->mCloseButton)->setState(cs_hover, false);
+        }
+    }
+    if (watched == d->mListenWidget && event->type() == QEvent::Leave) {
+        for (const auto &tab : d->mTabInfos.keys()) {
+            d->stateDisplay(tab)->setState(cs_hover, false);
+        }
+    }
+    if (watched->metaObject()->className() == QString("QToolButton")) {
+        switch (event->type()) {
+            case QEvent::Enter:
+                if (watched->isEnabled()) {
+                    d->stateDisplay(watched->objectName())->setState(cs_hover, true);
+                }
+                break;
+            case QEvent::Leave:
+                d->stateDisplay(watched->objectName())->setState(cs_hover, false);
+                break;
+            default:
+                break;
         }
     }
 }

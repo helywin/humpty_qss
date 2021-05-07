@@ -64,7 +64,9 @@ void ComboBoxContainer::setListenWidget(QWidget *w)
         d->addControlStateDisplay(d->mDropDown, cs_disabled, false);
         d->addControlStateDisplay(d->mDownArrow, cs_disabled, false);
     }
+#ifdef _WINDOWS
     setListenGlobalMouseEvent(true);
+#endif
     comboBox->view()->installEventFilter(this);
 }
 
@@ -81,8 +83,8 @@ void ComboBoxContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *
     }
     switch (event->type()) {
         case QEvent::Enter:
-            qDebug() << "enter";
-            qDebug() << d->mMainControlName;
+//            qDebug() << "enter";
+//            qDebug() << d->mMainControlName;
             d->mainStateDisplay()->setState(cs_hover, true);
             break;
         case QEvent::Leave:

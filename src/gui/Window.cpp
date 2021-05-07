@@ -531,67 +531,6 @@ void WindowPrivate::addQMenuPage()
     GridLayoutHelper helper(grid);
     using Type = QMenu;
 
-/*    auto e = new Type;
-    e->setTitle(text);
-    auto menu = new QMenu("expand", e);
-    menu->addAction(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_ComputerIcon),
-                    "computer");
-    e->addMenu(menu);
-    e->addSection(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_DriveDVDIcon),
-                  "-- exclusive --");
-    auto ag = new QActionGroup(q);
-    QAction *a;
-    ag->setExclusive(true);
-    ag->addAction((a = new QAction("none", e),
-            a->setCheckable(true),
-            a->setChecked(true),
-            a));
-    ag->addAction((a = new QAction("dir", e),
-            a->setIcon(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_DirIcon)),
-            a->setCheckable(true),
-            a));
-    ag->addAction((a = new QAction("QMenu::indicator:exclusive", e),
-            a->setCheckable(true),
-            a->setData(true),
-            a));
-    e->addActions(ag->actions());
-    e->addSection("-- non-exclusive --");
-    ag = new QActionGroup(q);
-    ag->setExclusive(false);
-    ag->addAction((a = new QAction("none", e),
-            a->setCheckable(true),
-            a->setChecked(true),
-            a));
-    ag->addAction((a = new QAction("trash", e),
-            a->setIcon(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_TrashIcon)),
-            a->setCheckable(true),
-            a->setChecked(true),
-            a));
-    ag->addAction((a = new QAction("QMenu::indicator:non-exclusive", e),
-            a->setCheckable(true),
-            a->setData(true),
-            a));
-    e->addActions(ag->actions());
-    e->addSection("-- item --");
-    e->addAction((a = new QAction("QMenu::item", e),
-            a->setCheckable(true),
-            a->setData(true),
-            a));
-    e->addAction((a = new QAction("QMenu::icon", e),
-            a->setCheckable(true),
-            a->setData(true),
-            a->setIcon(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon)),
-            a));
-    e->addAction((a = new QAction("QMenu:item:disabled", e),
-            a->setDisabled(true),
-            a));
-    auto button = new QPushButton;
-    QObject::connect(button, &QPushButton::clicked, [e] {
-        e->exec(QCursor::pos());
-    });
-    gNoParentWidgets.append(e);
-    helper.addWidget(new Showcase(e, button, page, slp_south));*/
-
     auto e = new Type;
     e->setTitle(text);
     auto menu = new QMenu("expand", e);
@@ -665,25 +604,7 @@ void WindowPrivate::addQTabBarPage()
     using Type = QTabBar;
 
     auto e = new Type;
-    e->addTab("QTabBar::tab:first");
-    e->addTab("QTabBar::tab");
-    e->addTab("QTabBar::close-button");
-    e->addTab("QTabBar::tab:disabled");
-    e->addTab(qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
-              "icon");
-    e->addTab("QTabBar::tab:last");
-    e->setTabsClosable(true);
-    e->setTabButton(0, QTabBar::RightSide, nullptr);
-    e->setTabButton(1, QTabBar::RightSide, nullptr);
-//    e->setTabButton(2, QTabBar::RightSide, nullptr);
-    e->setTabButton(3, QTabBar::RightSide, nullptr);
-    e->setTabButton(4, QTabBar::RightSide, nullptr);
-    e->setTabButton(5, QTabBar::RightSide, nullptr);
-    e->setTabEnabled(3, false);
-    helper.addWidget(new Showcase(e, page));
-
-    e = new Type;
-    e->setMinimumWidth(400);
+    e->setMinimumWidth(500);
     e->addTab("QTabBar::tab:first");
     e->addTab("QTabBar::tab");
     e->addTab("QTabBar::close-button");
@@ -704,6 +625,14 @@ void WindowPrivate::addQTabBarPage()
     c->setListenWidget(e);
     helper.addWidget(c);
 
+
+    e = new Type;
+    e->setMinimumWidth(100);
+    e->addTab("QTabBar::tab:only-one");
+    c = new TabBarContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQTabWidgetPage()
