@@ -1,5 +1,7 @@
 add_subdirectory(logger)
-add_subdirectory(crash_handler)
+if (WIN32)
+    add_subdirectory(crash_handler)
+endif ()
 add_subdirectory(translatable)
 add_subdirectory(utils)
 add_subdirectory(settings)

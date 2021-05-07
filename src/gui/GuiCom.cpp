@@ -19,6 +19,7 @@ const char *cWidgetNames[] = {
         "QMenu",
         "QTabBar",
         "QTabWidget",
+        "QScrollBar",
 };
 
 QString widgetName(WidgetType type)

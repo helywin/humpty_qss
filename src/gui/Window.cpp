@@ -19,6 +19,8 @@
 #include "CheckContainer.hpp"
 #include "MenuContainer.hpp"
 #include "TabBarContainer.hpp"
+#include "TabWidgetContainer.hpp"
+#include "ScrollBarContainer.hpp"
 
 QList<QWidget *> gNoParentWidgets;
 
@@ -47,8 +49,8 @@ QScrollBar
 QSizeGrip
 QSlider
 QSpinBox
-QTabBar
-QTabWidget
+ QTabBar
+ QTabWidget
 QTimeEdit
 QToolBox
  QToolButton
@@ -130,6 +132,7 @@ public:
     void addQMenuPage();
     void addQTabBarPage();
     void addQTabWidgetPage();
+    void addQScrollBarPage();
 };
 
 WindowPrivate::WindowPrivate(Window *p) :
@@ -177,6 +180,7 @@ WindowPrivate::WindowPrivate(Window *p) :
     addQMenuPage();
     addQTabBarPage();
     addQTabWidgetPage();
+    addQScrollBarPage();
 
     QssEditorConfig config;
     config.setTabReplace(true);
@@ -655,7 +659,29 @@ void WindowPrivate::addQTabWidgetPage()
               qApp->style()->standardIcon(QStyle::StandardPixmap::SP_FileIcon),
               "tab_icon");
     e->setTabEnabled(1, false);
-    helper.addWidget(new Showcase(e, page));
+    auto c = new TabWidgetContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
+}
+
+void WindowPrivate::addQScrollBarPage()
+{
+    QGridLayout *grid;
+    auto page = initPage(wt_scrollBar, grid);
+    GridLayoutHelper helper(grid);
+    using Type = QScrollBar;
+
+    auto e = new Type;
+    e->setMinimumWidth(400);
+    e->setMaximum(100);
+    e->setMinimum(0);
+    e->setValue(10);
+    e->setOrientation(Qt::Horizontal);
+    auto c = new ScrollBarContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
 }
 
 Window::Window(QWidget *parent) :

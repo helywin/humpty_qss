@@ -24,6 +24,7 @@ enum WidgetType
     wt_menu,
     wt_tabBar,
     wt_tabWidget,
+    wt_scrollBar,
     wt_widgetCount,
 };
 

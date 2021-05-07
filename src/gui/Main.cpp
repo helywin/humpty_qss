@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 #endif
     // let hidpi font scale
     font.setPointSize(12);
-    qDebug() << font.pixelSize();
+//    qDebug() << font.pixelSize();
     QApplication::setFont(font);
     Window window;
     window.setStyleSheet(QString(file.readAll()));

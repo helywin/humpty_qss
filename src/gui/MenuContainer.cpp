@@ -41,9 +41,9 @@ void MenuContainer::setListenWidget(QWidget *w)
     states |= cs_selected;
     d->addControlStateDisplay(w->metaObject()->className(), cs_none);
     for (auto action : menu->actions()) {
-        qDebug() << action->text() << "  ===";
+//        qDebug() << action->text() << "  ===";
         if (action->data().toBool()) {
-            qDebug() << action->text() << "  on";
+//            qDebug() << action->text() << "  on";
             d->addControlStateDisplay(action->text(),
                                       states | (action->isCheckable() ? cs_checked : cs_none),
                                       false);

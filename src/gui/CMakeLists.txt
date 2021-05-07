@@ -36,14 +36,16 @@ generate_qrc()
 
 #get_target_property(LIBS ${CURRENT_MODULE_TARGET} LINK_LIBRARIES)
 
-install(TARGETS ${CURRENT_MODULE_TARGET} ${MODULE_LIBS}
-        CONFIGURATIONS Debug
-        RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/bin/humpty_qss_dbg
-        LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/bin/humpty_qss_dbg
-        )
+if (false)
+    install(TARGETS ${CURRENT_MODULE_TARGET} ${MODULE_LIBS}
+            CONFIGURATIONS Debug
+            RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/bin/humpty_qss_dbg
+            LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/bin/humpty_qss_dbg
+            )
 
-install(TARGETS ${CURRENT_MODULE_TARGET} ${MODULE_LIBS}
-        CONFIGURATIONS Release
-        RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/bin/humpty_qss
-        LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/bin/humpty_qss
-        )
+    install(TARGETS ${CURRENT_MODULE_TARGET} ${MODULE_LIBS}
+            CONFIGURATIONS Release
+            RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/bin/humpty_qss
+            LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/bin/humpty_qss
+            )
+endif ()
