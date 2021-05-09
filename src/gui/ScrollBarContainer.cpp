@@ -20,6 +20,13 @@ public:
     QString mHandle;
     QString mAddLine;
     QString mSubLine;
+    QString mAddPage;
+    QString mSubPage;
+    QString mLeftArrow;
+    QString mRightArrow;
+    QString mUpArrow;
+    QString mDownArrow;
+    bool mHandlePressed = false;
 
     explicit ScrollBarContainerPrivate(ScrollBarContainer *p);
 };
@@ -49,6 +56,7 @@ void ScrollBarContainer::setListenWidget(QWidget *w)
     if (!scrollBar) {
         std::abort();
     }
+    assert(scrollBar->orientation() == Qt::Horizontal);
     d->mOrientation = scrollBar->orientation() == Qt::Horizontal ? "horizontal" : "vertical";
     QString name = w->metaObject()->className();
     w->dumpObjectTree();
@@ -59,11 +67,27 @@ void ScrollBarContainer::setListenWidget(QWidget *w)
     d->mHandle = name + "::handle:" + d->mOrientation;
     d->mAddLine = name + "::add-line:" + d->mOrientation;
     d->mSubLine = name + "::sub-line:" + d->mOrientation;
+    d->mAddPage = name + "::add-page:" + d->mOrientation;
+    d->mSubPage = name + "::sub-page:" + d->mOrientation;
+    d->mLeftArrow = name + "::left-arrow";
+    d->mRightArrow = name + "::right-arrow";
+    d->mUpArrow = name + "::up-arrow";
+    d->mDownArrow = name + "::down-arrow";
+
 
     d->addControlStateDisplay(d->mName, states);
     d->addControlStateDisplay(d->mHandle, states);
     d->addControlStateDisplay(d->mAddLine, states);
     d->addControlStateDisplay(d->mSubLine, states);
+    d->addControlStateDisplay(d->mAddPage, states);
+    d->addControlStateDisplay(d->mSubPage, states);
+    if (scrollBar->orientation() == Qt::Horizontal) {
+        d->addControlStateDisplay(d->mLeftArrow, states);
+        d->addControlStateDisplay(d->mRightArrow, states);
+    } else {
+        d->addControlStateDisplay(d->mUpArrow, states);
+        d->addControlStateDisplay(d->mDownArrow, states);
+    }
     w->setMouseTracking(true);
     connect(scrollBar, &QScrollBar::sliderPressed, [this] {
         auto d = (ScrollBarContainerPrivate *) d_ptr.data();
@@ -103,7 +127,12 @@ void ScrollBarContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent 
             ->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, scrollBar);
     auto subLineRect = scrollBar->style()
             ->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSubLine, scrollBar);
-
+    auto addLineRect = scrollBar->style()
+            ->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarAddLine, scrollBar);
+    auto subPageRect = scrollBar->style()
+            ->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSubPage, scrollBar);
+    auto addPageRect = scrollBar->style()
+            ->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarAddPage, scrollBar);
     // recalculate position of slider because there is a bug
     int maxlen = ((scrollBar->orientation() == Qt::Horizontal) ?
                   scrollBar->rect().width() : scrollBar->rect().height()) -
@@ -114,40 +143,95 @@ void ScrollBarContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent 
                                                      maxlen - sliderRect.width(),
                                                      scrollBar->invertedAppearance());
     sliderRect.moveLeft(sliderPos + sliderRect.width() / 2);
-
-    auto addLineRect = scrollBar->style()
-            ->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarAddLine, scrollBar);
     addLineRect.moveLeft(scrollBar->width() - addLineRect.width());
+    subPageRect.setLeft(subLineRect.right() + 1);
+    subPageRect.setRight(sliderRect.left() - 1);
+    addPageRect.setRight(addLineRect.left() - 1);
+    addPageRect.setLeft(sliderRect.right() + 1);
+
     switch (event->type()) {
         case QEvent::MouseMove: {
+            d->stateDisplay(d->mName)->setState(cs_hover, true);
             d->stateDisplay(d->mHandle)
                     ->setState(cs_hover, sliderRect.contains(mouseEvent->pos()));
-            d->stateDisplay(d->mSubLine)
-                    ->setState(cs_hover, subLineRect.contains(mouseEvent->pos()));
-            d->stateDisplay(d->mAddLine)
-                    ->setState(cs_hover, addLineRect.contains(mouseEvent->pos()));
+            // only when handle not be dragged should hover event be passed to other sub-controls
+            if (!d->mHandlePressed) {
+                bool subHover = subLineRect.contains(mouseEvent->pos());
+                bool addHover = addLineRect.contains(mouseEvent->pos());
+                d->stateDisplay(d->mSubLine)
+                        ->setState(cs_hover, subHover);
+                d->stateDisplay(d->mAddLine)
+                        ->setState(cs_hover, addHover);
+                d->stateDisplay(d->mSubPage)
+                        ->setState(cs_hover, subPageRect.contains(mouseEvent->pos()));
+                d->stateDisplay(d->mAddPage)
+                        ->setState(cs_hover, addPageRect.contains(mouseEvent->pos()));
+                if (scrollBar->orientation() == Qt::Horizontal) {
+                    d->stateDisplay(d->mLeftArrow)->setState(cs_hover, subHover);
+                    d->stateDisplay(d->mRightArrow)->setState(cs_hover, addHover);
+                } else {
+                    d->stateDisplay(d->mUpArrow)->setState(cs_hover, subHover);
+                    d->stateDisplay(d->mDownArrow)->setState(cs_hover, addHover);
+                }
+            }
             break;
         }
         case QEvent::Leave:
+            d->stateDisplay(d->mName)->setState(cs_hover, false);
             d->stateDisplay(d->mHandle)->setState(cs_hover, false);
             d->stateDisplay(d->mSubLine)->setState(cs_hover, false);
             d->stateDisplay(d->mAddLine)->setState(cs_hover, false);
+            d->stateDisplay(d->mSubPage)->setState(cs_hover, false);
+            d->stateDisplay(d->mAddPage)->setState(cs_hover, false);
+            if (scrollBar->orientation() == Qt::Horizontal) {
+                d->stateDisplay(d->mLeftArrow)->setState(cs_hover, false);
+                d->stateDisplay(d->mRightArrow)->setState(cs_hover, false);
+            } else {
+                d->stateDisplay(d->mUpArrow)->setState(cs_hover, false);
+                d->stateDisplay(d->mDownArrow)->setState(cs_hover, false);
+            }
             break;
         case QEvent::MouseButtonPress:
             if (mouseEvent->button() == Qt::LeftButton) {
+                d->stateDisplay(d->mName)->setState(cs_pressed, true);
+                d->mHandlePressed = sliderRect.contains(mouseEvent->pos());
+                bool subPressed = subLineRect.contains(mouseEvent->pos());
+                bool addPressed = addLineRect.contains(mouseEvent->pos());
                 d->stateDisplay(d->mHandle)
-                        ->setState(cs_pressed, sliderRect.contains(mouseEvent->pos()));
+                        ->setState(cs_pressed, d->mHandlePressed);
                 d->stateDisplay(d->mSubLine)
-                        ->setState(cs_pressed, subLineRect.contains(mouseEvent->pos()));
+                        ->setState(cs_pressed, subPressed);
                 d->stateDisplay(d->mAddLine)
-                        ->setState(cs_pressed, addLineRect.contains(mouseEvent->pos()));
+                        ->setState(cs_pressed, addPressed);
+                d->stateDisplay(d->mSubPage)
+                        ->setState(cs_pressed, subPageRect.contains(mouseEvent->pos()));
+                d->stateDisplay(d->mAddPage)
+                        ->setState(cs_pressed, addPageRect.contains(mouseEvent->pos()));
+                if (scrollBar->orientation() == Qt::Horizontal) {
+                    d->stateDisplay(d->mLeftArrow)->setState(cs_pressed, subPressed);
+                    d->stateDisplay(d->mRightArrow)->setState(cs_pressed, addPressed);
+                } else {
+                    d->stateDisplay(d->mUpArrow)->setState(cs_pressed, subPressed);
+                    d->stateDisplay(d->mDownArrow)->setState(cs_pressed, addPressed);
+                }
             }
 
             break;
         case QEvent::MouseButtonRelease:
+            d->mHandlePressed = false;
+            d->stateDisplay(d->mName)->setState(cs_pressed, false);
             d->stateDisplay(d->mHandle)->setState(cs_pressed, false);
             d->stateDisplay(d->mSubLine)->setState(cs_pressed, false);
             d->stateDisplay(d->mAddLine)->setState(cs_pressed, false);
+            d->stateDisplay(d->mSubPage)->setState(cs_pressed, false);
+            d->stateDisplay(d->mAddPage)->setState(cs_pressed, false);
+            if (scrollBar->orientation() == Qt::Horizontal) {
+                d->stateDisplay(d->mLeftArrow)->setState(cs_pressed, false);
+                d->stateDisplay(d->mRightArrow)->setState(cs_pressed, false);
+            } else {
+                d->stateDisplay(d->mUpArrow)->setState(cs_pressed, false);
+                d->stateDisplay(d->mDownArrow)->setState(cs_pressed, false);
+            }
             break;
         default:
             break;
