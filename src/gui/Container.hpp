@@ -40,7 +40,7 @@ public:
 protected:
     explicit Container(ContainerPrivate &dd, QWidget *parent = nullptr);
     virtual void onListenedWidgetEventOccurred(QWidget *watched, QEvent *event);
-    virtual void onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button);
+//    virtual void onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button);
 
 protected:
     QScopedPointer<ContainerPrivate> d_ptr;

@@ -9,6 +9,7 @@
 #include <QScrollBar>
 #include <QStyleOptionSlider>
 #include <QMouseEvent>
+#include <cassert>
 
 
 class ScrollBarContainerPrivate : public ContainerPrivate
@@ -133,16 +134,32 @@ void ScrollBarContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent 
             ->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSubPage, scrollBar);
     auto addPageRect = scrollBar->style()
             ->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarAddPage, scrollBar);
-    // recalculate position of slider because there is a bug
-    int maxlen = ((scrollBar->orientation() == Qt::Horizontal) ?
-                  scrollBar->rect().width() : scrollBar->rect().height()) -
-                 (subLineRect.width() * 2);
-    auto sliderPos = QStyle::sliderPositionFromValue(scrollBar->minimum(),
+
+    /*****************************************************************************************
+     * recalculate position of slider because there is a bug!!!
+     * default style slider region start from right of sub-line and end with left of add-line
+     * BUT when custom style sheet set, slider region start from left of scrollbar and end
+     * with right of scrollbar, see (asset/scrollbar_handle_rect.gif)
+    ******************************************************************************************/
+
+    int scrollAreaLen = scrollBar->orientation() == Qt::Horizontal ?
+                        scrollBar->rect().width()
+                        //                        - subLineRect.width() * 2
+                                                                   :
+                        scrollBar->rect().height()
+//                        - subLineRect.height() * 2
+    ;
+#if 0
+    int sliderPos = QStyle::sliderPositionFromValue(scrollBar->minimum(),
                                                      scrollBar->maximum(),
                                                      scrollBar->sliderPosition(),
-                                                     maxlen - sliderRect.width(),
+                                                     scrollAreaLen - sliderRect.width(),
                                                      scrollBar->invertedAppearance());
-    sliderRect.moveLeft(sliderPos + sliderRect.width() / 2);
+#else
+    int sliderPos = scrollAreaLen * scrollBar->sliderPosition() /
+                    (scrollBar->pageStep() + scrollBar->maximum() - scrollBar->minimum());
+#endif
+    sliderRect.moveLeft(sliderPos);
     addLineRect.moveLeft(scrollBar->width() - addLineRect.width());
     subPageRect.setLeft(subLineRect.right() + 1);
     subPageRect.setRight(sliderRect.left() - 1);

@@ -55,3 +55,4 @@ __pycache__
 #python 虚拟环境
 venv/
 .idea/
+.cache/

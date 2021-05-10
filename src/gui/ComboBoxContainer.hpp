@@ -19,7 +19,7 @@ public:
     void setListenWidget(QWidget *w) override;
 
 protected:
-    void onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button) override;
+//    void onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button) override;
     void onListenedWidgetEventOccurred(QWidget *watched, QEvent *event) override;
 
 private:

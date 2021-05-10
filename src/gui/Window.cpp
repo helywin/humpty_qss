@@ -193,6 +193,18 @@ WindowPrivate::WindowPrivate(Window *p) :
                      "QWidget:disabled {\n    background:#cccccc;\n}\n"
                      ".QLabel {\n"
                      "    qproperty-indent: 10;\n"
+                     "}"
+                     "QScrollBar::add-line,\n"
+                     "QScrollBar::sub-line {\n"
+                     "    background:purple;\n"
+                     "}\n"
+                     "\n"
+                     "QScrollBar::handle {\n"
+                     "    background:green;\n"
+                     "}\n"
+                     "\n"
+                     "QScrollBar::handle:hover {\n"
+                     "    background:red;\n"
                      "}");
     mEditPage->setSizePolicy(QSizePolicy::Expanding,
                              QSizePolicy::Preferred);
@@ -443,7 +455,7 @@ void WindowPrivate::addQComboBoxPage()
     e->setEditable(true);
     e->addItems(textList);
     auto c = new ComboBoxContainer(page);
-    c->setWidget(e);
+    c->setWidget(e, Container::wp_south);
     c->setListenWidget(e);
     helper.addWidget(c);
 
@@ -452,7 +464,7 @@ void WindowPrivate::addQComboBoxPage()
     e->setDisabled(true);
     e->addItems(textList);
     c = new ComboBoxContainer(page);
-    c->setWidget(e);
+    c->setWidget(e, Container::wp_south);
     c->setListenWidget(e);
     helper.addWidget(c);
 
@@ -460,7 +472,7 @@ void WindowPrivate::addQComboBoxPage()
     setSize(e);
     e->addItems(textList);
     c = new ComboBoxContainer(page);
-    c->setWidget(e);
+    c->setWidget(e, Container::wp_south);
     c->setListenWidget(e);
     helper.addWidget(c);
 }

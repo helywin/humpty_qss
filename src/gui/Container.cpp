@@ -8,7 +8,7 @@
 
 #include "StateDisplay.hpp"
 #include "Utils.hpp"
-#include "GlobalMouseListener.hpp"
+//#include "GlobalMouseListener.hpp"
 #include "Container_p.hpp"
 
 using namespace Com;
@@ -98,7 +98,7 @@ void Container::onListenedWidgetEventOccurred(QWidget *watched, QEvent *event)
 
 }
 
-#ifdef _WINDOWS
+/*
 void Container::setListenGlobalMouseEvent(bool enable)
 {
     Q_D(Container);
@@ -113,12 +113,14 @@ void Container::setListenGlobalMouseEvent(bool enable)
     }
     d->mListenGlobalMouseEvent = enable;
 }
-#endif
+*/
 
+/*
 void Container::onGlobalMouseEvent(QEvent::Type type, Qt::MouseButton button)
 {
 
 }
+*/
 
 void Container::setListenWidget(QWidget *w)
 {
