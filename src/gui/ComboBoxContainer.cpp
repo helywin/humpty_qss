@@ -55,7 +55,7 @@ void ComboBoxContainer::setListenWidget(QWidget *w)
         states = cs_disabled;
     }
     d->mMainControlName = name;
-    d->addControlStateDisplay(d->mMainControlName, states);
+    d->addControlStateDisplay(d->mMainControlName, states, true);
     d->mDropDown = QString(w->metaObject()->className()) + "::drop-down";
     d->mDownArrow = QString(w->metaObject()->className()) + "::down-arrow";
     if (comboBox->isEnabled()) {

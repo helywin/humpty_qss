@@ -53,7 +53,7 @@ void CheckContainer::setListenWidget(QWidget *w)
     if (!w->isEnabled()) {
         states = cs_disabled;
     }
-    d->addControlStateDisplay(name, states);
+    d->addControlStateDisplay(name, states, true);
     d->mIndicatorName = name + "::indicator";
     auto indicator = d->mIndicatorName;
     d->addControlStateDisplay(d->mIndicatorName, states, false);

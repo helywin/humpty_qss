@@ -38,7 +38,7 @@ void TabWidgetContainer::setListenWidget(QWidget *w)
     Q_D(TabWidgetContainer);
     Container::setListenWidget(w);
     QString name = w->metaObject()->className();
-    d->addControlStateDisplay(name, cs_none);
+    d->addControlStateDisplay(name, cs_none, true);
     d->addControlStateDisplay(name + "::pane", cs_none, false);
     d->addControlStateDisplay(name + "::tab-bar", cs_none, false);
 }

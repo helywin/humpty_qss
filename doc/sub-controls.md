@@ -1,0 +1,38 @@
+|        sub-control name            |  Discription |
+| ------------------ | ------------------------------------------------------------ |
+| `::add-line`       | The button to add a line of a [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html). |
+| `::add-page`       | The region between the handle (slider) and the [add-line](qthelp://org.qt-project.qtwidgets.595/qtwidgets/stylesheet-reference.html#add-line-sub) of a [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html). |
+| `::branch`         | The branch indicator of a [QTreeView](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtreeview.html). |
+| `::chunk`          | The progress chunk of a [QProgressBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qprogressbar.html). |
+| `::close-button`   | The close button of a [QDockWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qdockwidget.html) or tabs of [QTabBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabbar.html) |
+| `::corner`         | The corner between two scrollbars in a [QAbstractScrollArea](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qabstractscrollarea.html) |
+| `::down-arrow`     | The down arrow of a [QComboBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qcombobox.html), [QHeaderView](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qheaderview.html) (sort indicator), [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html) or [QSpinBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qspinbox.html). |
+| `::down-button`    | The down button of a [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html) or a [QSpinBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qspinbox.html). |
+| `::drop-down`      | The drop-down button of a [QComboBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qcombobox.html). |
+| `::float-button`   | The float button of a [QDockWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qdockwidget.html) |
+| `::groove`         | The groove of a [QSlider](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qslider.html). |
+| `::indicator`      | The indicator of a [QAbstractItemView](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qabstractitemview.html), a [QCheckBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qcheckbox.html), a [QRadioButton](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qradiobutton.html), a checkable [QMenu](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qmenu.html) item or a checkable [QGroupBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qgroupbox.html). |
+| `::handle`         | The handle (slider) of a [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html), a [QSplitter](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qsplitter.html), or a [QSlider](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qslider.html). |
+| `::icon`           | The icon of a [QAbstractItemView](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qabstractitemview.html) or a [QMenu](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qmenu.html). |
+| `::item`           | An item of a [QAbstractItemView](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qabstractitemview.html), a [QMenuBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qmenubar.html), a [QMenu](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qmenu.html), or a [QStatusBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qstatusbar.html). |
+| `::left-arrow`     | The left arrow of a [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html). |
+| `::left-corner`    | The left corner of a [QTabWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabwidget.html). For example, this control can be used to control position the left corner widget in a [QTabWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabwidget.html). |
+| `::menu-arrow`     | The arrow of a [QToolButton](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtoolbutton.html) with a menu. |
+| `::menu-button`    | The menu button of a [QToolButton](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtoolbutton.html). |
+| `::menu-indicator` | The menu indicator of a [QPushButton](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qpushbutton.html). |
+| `::right-arrow`    | The right arrow of a [QMenu](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qmenu.html) or a [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html). |
+| `::pane`           | The pane (frame) of a [QTabWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabwidget.html). |
+| `::right-corner`   | The right corner of a [QTabWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabwidget.html). For example, this control can be used to control the position the right corner widget in a [QTabWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabwidget.html). |
+| `::scroller`       | The scroller of a [QMenu](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qmenu.html) or [QTabBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabbar.html). |
+| `::section`        | The section of a [QHeaderView](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qheaderview.html). |
+| `::separator`      | The separator of a [QMenu](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qmenu.html) or in a [QMainWindow](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qmainwindow.html). |
+| `::sub-line`       | The button to subtract a line of a [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html). |
+| `::sub-page`       | The region between the handle (slider) and the [sub-line](qthelp://org.qt-project.qtwidgets.595/qtwidgets/stylesheet-reference.html#sub-line-sub) of a [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html). |
+| `::tab`            | The tab of a [QTabBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabbar.html) or [QToolBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtoolbox.html). |
+| `::tab-bar`        | The tab bar of a [QTabWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabwidget.html). This subcontrol exists only to control the position of the [QTabBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabbar.html) inside the [QTabWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabwidget.html). To style the tabs using the [::tab](qthelp://org.qt-project.qtwidgets.595/qtwidgets/stylesheet-reference.html#tab-sub) subcontrol. |
+| `::tear`           | The tear indicator of a [QTabBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qtabbar.html). |
+| `::tearoff`        | The tear-off indicator of a [QMenu](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qmenu.html). |
+| `::text`           | The text of a [QAbstractItemView](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qabstractitemview.html). |
+| `::title`          | The title of a [QGroupBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qgroupbox.html) or a [QDockWidget](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qdockwidget.html). |
+| `::up-arrow`       | The up arrow of a [QHeaderView](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qheaderview.html) (sort indicator), [QScrollBar](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qscrollbar.html) or a [QSpinBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qspinbox.html). |
+| `::up-button`      | The up button of a [QSpinBox](qthelp://org.qt-project.qtwidgets.595/qtwidgets/qspinbox.html). |

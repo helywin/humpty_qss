@@ -69,5 +69,5 @@ void LineEditContainer::setListenWidget(QWidget *w)
     if (!lineEdit->isEnabled()) {
         states = cs_disabled;
     }
-    d->addControlStateDisplay(name, states);
+    d->addControlStateDisplay(name, states, true);
 }

@@ -39,7 +39,7 @@ void MenuContainer::setListenWidget(QWidget *w)
     auto menu = dynamic_cast<QMenu *>(w);
     ControlStates states;
     states |= cs_selected;
-    d->addControlStateDisplay(w->metaObject()->className(), cs_none);
+    d->addControlStateDisplay(w->metaObject()->className(), cs_none, true);
     for (auto action : menu->actions()) {
 //        qDebug() << action->text() << "  ===";
         if (action->data().toBool()) {

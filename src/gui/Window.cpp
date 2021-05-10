@@ -9,7 +9,7 @@
 
 #include "QssEditor.hpp"
 #include "Utils.hpp"
-#include "Showcase.hpp"
+#include "useless/Showcase.hpp"
 #include "QssEditorConfig.hpp"
 #include "GuiCom.hpp"
 #include "WidgetContainer.hpp"
@@ -45,7 +45,7 @@ QProgressBar
  QPushButton
  QRadioButton
 QScrollArea
-QScrollBar
+ QScrollBar
 QSizeGrip
 QSlider
 QSpinBox
@@ -345,6 +345,18 @@ void WindowPrivate::addQPushButton()
     c->setWidget(e);
     c->setListenWidget(e);
     setSize(e);
+    helper.addWidget(c);
+
+    e = new Type;
+    e->setText(text + " menu");
+    auto menu = new QMenu;
+    menu->addAction("menu item");
+    gNoParentWidgets.append(menu);
+    e->setMenu(menu);
+    c = new ButtonContainer(page);
+    c->setWidget(e, Container::wp_south);
+    c->setListenWidget(e);
+    e->setFixedSize(220, 40);
     helper.addWidget(c);
 }
 

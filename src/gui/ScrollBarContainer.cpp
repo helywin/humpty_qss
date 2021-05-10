@@ -76,18 +76,18 @@ void ScrollBarContainer::setListenWidget(QWidget *w)
     d->mDownArrow = name + "::down-arrow";
 
 
-    d->addControlStateDisplay(d->mName, states);
-    d->addControlStateDisplay(d->mHandle, states);
-    d->addControlStateDisplay(d->mAddLine, states);
-    d->addControlStateDisplay(d->mSubLine, states);
-    d->addControlStateDisplay(d->mAddPage, states);
-    d->addControlStateDisplay(d->mSubPage, states);
+    d->addControlStateDisplay(d->mName, states, true);
+    d->addControlStateDisplay(d->mHandle, states, false);
+    d->addControlStateDisplay(d->mAddLine, states, false);
+    d->addControlStateDisplay(d->mSubLine, states, false);
+    d->addControlStateDisplay(d->mAddPage, states, false);
+    d->addControlStateDisplay(d->mSubPage, states, false);
     if (scrollBar->orientation() == Qt::Horizontal) {
-        d->addControlStateDisplay(d->mLeftArrow, states);
-        d->addControlStateDisplay(d->mRightArrow, states);
+        d->addControlStateDisplay(d->mLeftArrow, states, false);
+        d->addControlStateDisplay(d->mRightArrow, states, false);
     } else {
-        d->addControlStateDisplay(d->mUpArrow, states);
-        d->addControlStateDisplay(d->mDownArrow, states);
+        d->addControlStateDisplay(d->mUpArrow, states, false);
+        d->addControlStateDisplay(d->mDownArrow, states, false);
     }
     w->setMouseTracking(true);
     connect(scrollBar, &QScrollBar::sliderPressed, [this] {

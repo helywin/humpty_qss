@@ -68,7 +68,7 @@ void TabBarContainer::setListenWidget(QWidget *w)
 #endif
     QString className = w->metaObject()->className();
     d->mCloseButton = className + "::close-button";
-    d->addControlStateDisplay(className, cs_none);
+    d->addControlStateDisplay(className, cs_none, true);
     ControlStates states;
     states |= cs_hover;
     states |= cs_selected;
@@ -106,7 +106,7 @@ void TabBarContainer::setListenWidget(QWidget *w)
         if (tabBar->tabText(i) == d->mCloseButton && button) {
             states = cs_hover;
             states |= cs_pressed;
-            d->addControlStateDisplay(d->mCloseButton, states);
+            d->addControlStateDisplay(d->mCloseButton, states, true);
             connect(button, &QAbstractButton::pressed, [this] {
                 auto d = (TabBarContainerPrivate *) d_ptr.data();
                 d->stateDisplay(d->mCloseButton)->setState(cs_pressed, true);
@@ -120,13 +120,13 @@ void TabBarContainer::setListenWidget(QWidget *w)
         }
     }
 
-    d->addControlStateDisplay(d->mTear, cs_none);
-    d->addControlStateDisplay(d->mScroller, cs_none);
+    d->addControlStateDisplay(d->mTear, cs_none, false);
+    d->addControlStateDisplay(d->mScroller, cs_none, false);
     states = cs_pressed;
     states |= cs_hover;
     states |= cs_disabled;
-    d->addControlStateDisplay(d->mLeftArrow, states);
-    d->addControlStateDisplay(d->mRightArrow, states);
+    d->addControlStateDisplay(d->mLeftArrow, states, false);
+    d->addControlStateDisplay(d->mRightArrow, states, false);
 
     for (auto child : tabBar->children()) {
         auto b = dynamic_cast<QToolButton *>(child);

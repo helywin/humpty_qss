@@ -7,6 +7,8 @@
 #include <QDebug>
 #include <QAbstractButton>
 #include <QToolButton>
+#include <QPushButton>
+#include <QMenu>
 #include <cassert>
 
 
@@ -14,6 +16,7 @@ class ButtonContainerPrivate : public ContainerPrivate
 {
 public:
     Q_DECLARE_PUBLIC(ButtonContainer)
+    QString mMenuArrow;
 
     explicit ButtonContainerPrivate(ButtonContainer *p);
 };
@@ -38,6 +41,15 @@ ButtonContainer::~ButtonContainer()
 void ButtonContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *event)
 {
     Q_D(ButtonContainer);
+    if (watched->metaObject()->className() == QString("QMenu")) {
+        if (event->type() == QEvent::Hide) {
+            qDebug() << "hide";
+            d->mainStateDisplay()->setState(cs_pressed, false);
+        } else if (event->type() == QEvent::Show) {
+            d->mainStateDisplay()->setState(cs_pressed, true);
+        }
+        return;
+    }
     switch (event->type()) {
         case QEvent::Enter:
             d->mainStateDisplay()->setState(cs_hover, true);
@@ -75,14 +87,27 @@ void ButtonContainer::setListenWidget(QWidget *w)
                 d_ptr->mainStateDisplay()->setState(cs_checked, checked);
             });
         }
-        d->addControlStateDisplay(w->metaObject()->className(), states);
+        d->addControlStateDisplay(w->metaObject()->className(), states, true);
     } else {
-        d->addControlStateDisplay(w->metaObject()->className(), cs_disabled);
+        d->addControlStateDisplay(w->metaObject()->className(), cs_disabled, true);
     }
-    connect(ab, &QAbstractButton::pressed, [this] {
-        d_ptr->mainStateDisplay()->setState(cs_pressed, true);
-    });
-    connect(ab, &QAbstractButton::released, [this] {
-        d_ptr->mainStateDisplay()->setState(cs_pressed, false);
-    });
+
+    auto pushButton = dynamic_cast<QPushButton *>(w);
+    if (pushButton) {
+        if (pushButton->menu()) {
+            pushButton->menu()->installEventFilter(this);
+        }
+        d->mMenuArrow = "QPushButton::menu-arrow";
+        d->addControlStateDisplay(d->mMenuArrow, cs_none, false);
+    }
+
+    if (!pushButton || !pushButton->menu()) {
+        connect(ab, &QAbstractButton::pressed, [this] {
+            d_ptr->mainStateDisplay()->setState(cs_pressed, true);
+        });
+        connect(ab, &QAbstractButton::released, [this] {
+            d_ptr->mainStateDisplay()->setState(cs_pressed, false);
+        });
+    }
+
 }

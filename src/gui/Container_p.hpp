@@ -29,7 +29,7 @@ public:
     void init();
     void setListenWidget(QWidget *w);
     void addControlStateDisplay(const QString &name, ControlStates states,
-                                bool isMainControl = true);
+                                bool isMainControl);
     StateDisplay *stateDisplay(const QString &name);
     StateDisplay *mainStateDisplay();
 };
