@@ -13,7 +13,8 @@
 #include "QssEditorConfig.hpp"
 #include "GuiCom.hpp"
 #include "WidgetContainer.hpp"
-#include "ButtonContainer.hpp"
+#include "PushButtonContainer.hpp"
+#include "ToolButtonContainer.hpp"
 #include "LineEditContainer.hpp"
 #include "ComboBoxContainer.hpp"
 #include "CheckContainer.hpp"
@@ -323,7 +324,7 @@ void WindowPrivate::addQPushButton()
 
     auto e = new Type;
     e->setText(text);
-    auto c = new ButtonContainer(page);
+    auto c = new PushButtonContainer(page);
     c->setWidget(e);
     c->setListenWidget(e);
     setSize(e);
@@ -331,7 +332,7 @@ void WindowPrivate::addQPushButton()
 
     e = new Type;
     e->setText(text);
-    c = new ButtonContainer(page);
+    c = new PushButtonContainer(page);
     e->setDisabled(true);
     c->setWidget(e);
     c->setListenWidget(e);
@@ -341,7 +342,7 @@ void WindowPrivate::addQPushButton()
     e = new Type;
     e->setText(text);
     e->setCheckable(true);
-    c = new ButtonContainer(page);
+    c = new PushButtonContainer(page);
     c->setWidget(e);
     c->setListenWidget(e);
     setSize(e);
@@ -353,7 +354,7 @@ void WindowPrivate::addQPushButton()
     menu->addAction("menu item");
     gNoParentWidgets.append(menu);
     e->setMenu(menu);
-    c = new ButtonContainer(page);
+    c = new PushButtonContainer(page);
     c->setWidget(e, Container::wp_south);
     c->setListenWidget(e);
     e->setFixedSize(220, 40);
@@ -370,7 +371,7 @@ void WindowPrivate::addQToolButton()
 
     auto e = new Type;
     e->setText(text);
-    auto c = new ButtonContainer(page);
+    auto c = new ToolButtonContainer(page);
     c->setWidget(e);
     c->setListenWidget(e);
     setSize(e);
@@ -378,7 +379,7 @@ void WindowPrivate::addQToolButton()
 
     e = new Type;
     e->setText(text);
-    c = new ButtonContainer(page);
+    c = new ToolButtonContainer(page);
     e->setDisabled(true);
     c->setWidget(e);
     c->setListenWidget(e);
@@ -388,7 +389,7 @@ void WindowPrivate::addQToolButton()
     e = new Type;
     e->setText(text);
     e->setCheckable(true);
-    c = new ButtonContainer(page);
+    c = new ToolButtonContainer(page);
     c->setWidget(e);
     c->setListenWidget(e);
     setSize(e);

@@ -2,7 +2,7 @@
 // Created by jiang on 2021/4/30.
 //
 
-#include "ButtonContainer.hpp"
+#include "ToolButtonContainer.hpp"
 #include "Container_p.hpp"
 #include <QDebug>
 #include <QAbstractButton>
@@ -12,35 +12,34 @@
 #include <cassert>
 
 
-class ButtonContainerPrivate : public ContainerPrivate
+class ToolButtonContainerPrivate : public ContainerPrivate
 {
 public:
-    Q_DECLARE_PUBLIC(ButtonContainer)
-    QString mMenuArrow;
+    Q_DECLARE_PUBLIC(ToolButtonContainer)
 
-    explicit ButtonContainerPrivate(ButtonContainer *p);
+    explicit ToolButtonContainerPrivate(ToolButtonContainer *p);
 };
 
-ButtonContainerPrivate::ButtonContainerPrivate(ButtonContainer *p) :
+ToolButtonContainerPrivate::ToolButtonContainerPrivate(ToolButtonContainer *p) :
         ContainerPrivate(p)
 {
-    Q_Q(ButtonContainer);
+    Q_Q(ToolButtonContainer);
 }
 
-ButtonContainer::ButtonContainer(QWidget *parent) :
-        Container(*new ButtonContainerPrivate(this), parent)
+ToolButtonContainer::ToolButtonContainer(QWidget *parent) :
+        Container(*new ToolButtonContainerPrivate(this), parent)
 {
-    Q_D(ButtonContainer);
+    Q_D(ToolButtonContainer);
 }
 
-ButtonContainer::~ButtonContainer()
+ToolButtonContainer::~ToolButtonContainer()
 {
 
 }
 
-void ButtonContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *event)
+void ToolButtonContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *event)
 {
-    Q_D(ButtonContainer);
+    Q_D(ToolButtonContainer);
     if (watched->metaObject()->className() == QString("QMenu")) {
         if (event->type() == QEvent::Hide) {
             qDebug() << "hide";
@@ -68,22 +67,19 @@ void ButtonContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *ev
     }
 }
 
-void ButtonContainer::setListenWidget(QWidget *w)
+void ToolButtonContainer::setListenWidget(QWidget *w)
 {
-    Q_D(ButtonContainer);
+    Q_D(ToolButtonContainer);
     Container::setListenWidget(w);
-    auto ab = dynamic_cast<QAbstractButton *>(w);
+    auto ab = dynamic_cast<QToolButton *>(w);
     assert(ab);
     if (ab->isEnabled()) {
         ControlStates states(cs_none);
         states |= cs_pressed;
         states |= cs_hover;
-        if (!dynamic_cast<QToolButton *>(ab)) {
-            states |= cs_focus;
-        }
         if (ab->isCheckable()) {
             states |= cs_checked;
-            connect(ab, &QAbstractButton::clicked, [this](bool checked) {
+            connect(ab, &QToolButton::clicked, [this](bool checked) {
                 d_ptr->mainStateDisplay()->setState(cs_checked, checked);
             });
         }
@@ -92,22 +88,11 @@ void ButtonContainer::setListenWidget(QWidget *w)
         d->addControlStateDisplay(w->metaObject()->className(), cs_disabled, true);
     }
 
-    auto pushButton = dynamic_cast<QPushButton *>(w);
-    if (pushButton) {
-        if (pushButton->menu()) {
-            pushButton->menu()->installEventFilter(this);
-        }
-        d->mMenuArrow = "QPushButton::menu-arrow";
-        d->addControlStateDisplay(d->mMenuArrow, cs_none, false);
-    }
-
-    if (!pushButton || !pushButton->menu()) {
-        connect(ab, &QAbstractButton::pressed, [this] {
-            d_ptr->mainStateDisplay()->setState(cs_pressed, true);
-        });
-        connect(ab, &QAbstractButton::released, [this] {
-            d_ptr->mainStateDisplay()->setState(cs_pressed, false);
-        });
-    }
+    connect(ab, &QToolButton::pressed, [this] {
+        d_ptr->mainStateDisplay()->setState(cs_pressed, true);
+    });
+    connect(ab, &QToolButton::released, [this] {
+        d_ptr->mainStateDisplay()->setState(cs_pressed, false);
+    });
 
 }
