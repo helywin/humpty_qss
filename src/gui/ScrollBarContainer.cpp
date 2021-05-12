@@ -57,7 +57,6 @@ void ScrollBarContainer::setListenWidget(QWidget *w)
     if (!scrollBar) {
         std::abort();
     }
-    assert(scrollBar->orientation() == Qt::Horizontal);
     d->mOrientation = scrollBar->orientation() == Qt::Horizontal ? "horizontal" : "vertical";
     QString name = w->metaObject()->className();
     w->dumpObjectTree();
@@ -159,12 +158,21 @@ void ScrollBarContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent 
     int sliderPos = scrollAreaLen * scrollBar->sliderPosition() /
                     (scrollBar->pageStep() + scrollBar->maximum() - scrollBar->minimum());
 #endif
-    sliderRect.moveLeft(sliderPos);
-    addLineRect.moveLeft(scrollBar->width() - addLineRect.width());
-    subPageRect.setLeft(subLineRect.right() + 1);
-    subPageRect.setRight(sliderRect.left() - 1);
-    addPageRect.setRight(addLineRect.left() - 1);
-    addPageRect.setLeft(sliderRect.right() + 1);
+    if (scrollBar->orientation() == Qt::Horizontal) {
+        sliderRect.moveLeft(sliderPos);
+        addLineRect.moveLeft(scrollBar->width() - addLineRect.width());
+        subPageRect.setLeft(subLineRect.right() + 1);
+        subPageRect.setRight(sliderRect.left() - 1);
+        addPageRect.setRight(addLineRect.left() - 1);
+        addPageRect.setLeft(sliderRect.right() + 1);
+    } else {
+        sliderRect.moveTop(sliderPos);
+        addLineRect.moveTop(scrollBar->height() - addLineRect.height());
+        subPageRect.moveTop(subLineRect.bottom() + 1);
+        subPageRect.moveBottom(sliderRect.top() - 1);
+        addPageRect.moveBottom(addLineRect.top() - 1);
+        addPageRect.moveTop(sliderRect.bottom() + 1);
+    }
 
     switch (event->type()) {
         case QEvent::MouseMove: {

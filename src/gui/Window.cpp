@@ -394,6 +394,18 @@ void WindowPrivate::addQToolButton()
     c->setListenWidget(e);
     setSize(e);
     helper.addWidget(c);
+
+    e = new Type;
+    e->setText(text + " menu");
+    auto menu = new QMenu;
+    menu->addAction("menu item");
+    gNoParentWidgets.append(menu);
+    e->setMenu(menu);
+    c = new ToolButtonContainer(page);
+    c->setWidget(e, Container::wp_south);
+    c->setListenWidget(e);
+    e->setFixedSize(220, 40);
+    helper.addWidget(c);
 }
 
 void WindowPrivate::addQLineEditPage()
@@ -698,12 +710,23 @@ void WindowPrivate::addQScrollBarPage()
     using Type = QScrollBar;
 
     auto e = new Type;
-    e->setMinimumWidth(400);
+    e->setMinimumWidth(300);
     e->setMaximum(100);
     e->setMinimum(0);
     e->setValue(10);
     e->setOrientation(Qt::Horizontal);
     auto c = new ScrollBarContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
+
+    e = new Type;
+    e->setMinimumHeight(300);
+    e->setMaximum(100);
+    e->setMinimum(0);
+    e->setValue(10);
+    e->setOrientation(Qt::Vertical);
+    c = new ScrollBarContainer(page);
     c->setWidget(e);
     c->setListenWidget(e);
     helper.addWidget(c);
