@@ -42,7 +42,7 @@ PushButtonContainer::~PushButtonContainer()
 void PushButtonContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent *event)
 {
     Q_D(PushButtonContainer);
-    if (watched->metaObject()->className() == QString("QMenu")) {
+    if (dynamic_cast<QMenu *>(watched)) {
         if (event->type() == QEvent::Hide) {
             qDebug() << "hide";
             d->mainStateDisplay()->setState(cs_pressed, false);
@@ -53,7 +53,7 @@ void PushButtonContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent
     }
     auto pushButton = dynamic_cast<QPushButton *>(watched);
     if (!pushButton) {
-        std::abort();
+        return;
     }
     QStyleOptionButton opt;
     opt.features;

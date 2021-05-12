@@ -22,6 +22,7 @@
 #include "TabBarContainer.hpp"
 #include "TabWidgetContainer.hpp"
 #include "ScrollBarContainer.hpp"
+#include "SliderContainer.hpp"
 
 QList<QWidget *> gNoParentWidgets;
 
@@ -134,6 +135,7 @@ public:
     void addQTabBarPage();
     void addQTabWidgetPage();
     void addQScrollBarPage();
+    void addQSlider();
 };
 
 WindowPrivate::WindowPrivate(Window *p) :
@@ -182,6 +184,7 @@ WindowPrivate::WindowPrivate(Window *p) :
     addQTabBarPage();
     addQTabWidgetPage();
     addQScrollBarPage();
+    addQSlider();
 
     QssEditorConfig config;
     config.setTabReplace(true);
@@ -727,6 +730,25 @@ void WindowPrivate::addQScrollBarPage()
     e->setValue(10);
     e->setOrientation(Qt::Vertical);
     c = new ScrollBarContainer(page);
+    c->setWidget(e);
+    c->setListenWidget(e);
+    helper.addWidget(c);
+}
+
+void WindowPrivate::addQSlider()
+{
+    QGridLayout *grid;
+    auto page = initPage(wt_slider, grid);
+    GridLayoutHelper helper(grid);
+    using Type = QSlider;
+
+    auto e = new Type;
+    e->setMinimumWidth(300);
+    e->setMaximum(100);
+    e->setMinimum(0);
+    e->setValue(10);
+    e->setOrientation(Qt::Horizontal);
+    auto c = new SliderContainer(page);
     c->setWidget(e);
     c->setListenWidget(e);
     helper.addWidget(c);
