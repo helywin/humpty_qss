@@ -62,7 +62,7 @@ void QssEditor::keyPressEvent(QKeyEvent *e)
         moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
         return;
     }
-    qDebug() << e->modifiers() << "  0x" << QString::number(e->key(), 16);
+//    qDebug() << e->modifiers() << "  0x" << QString::number(e->key(), 16);
     if (d->mConfig.autoParentheses() && ((e->modifiers() == Qt::ShiftModifier &&
                                           e->key() == Qt::Key_ParenLeft) ||
                                          e->key() == Qt::Key_BraceLeft)) {
