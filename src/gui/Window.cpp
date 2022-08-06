@@ -49,7 +49,7 @@ QProgressBar
 QScrollArea
  QScrollBar
 QSizeGrip
-QSlider
+ QSlider
 QSpinBox
  QTabBar
  QTabWidget

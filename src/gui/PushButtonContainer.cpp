@@ -44,7 +44,6 @@ void PushButtonContainer::onListenedWidgetEventOccurred(QWidget *watched, QEvent
     Q_D(PushButtonContainer);
     if (dynamic_cast<QMenu *>(watched)) {
         if (event->type() == QEvent::Hide) {
-            qDebug() << "hide";
             d->mainStateDisplay()->setState(cs_pressed, false);
         } else if (event->type() == QEvent::Show) {
             d->mainStateDisplay()->setState(cs_pressed, true);
